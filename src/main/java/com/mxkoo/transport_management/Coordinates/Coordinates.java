@@ -1,18 +1,19 @@
 package com.mxkoo.transport_management.Coordinates;
 
 import jakarta.persistence.Embeddable;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Embeddable
 public class Coordinates {
-    private int x;
-    private int y;
+
+    private double x;
+    private double y;
 
 
 

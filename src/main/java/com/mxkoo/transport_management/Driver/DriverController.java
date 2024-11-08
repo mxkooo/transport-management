@@ -1,5 +1,6 @@
 package com.mxkoo.transport_management.Driver;
 
+import com.mxkoo.transport_management.Coordinates.Coordinates;
 import lombok.AllArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,11 @@ public class DriverController {
     @PatchMapping(DriverRoutes.UPDATE + "/{id}")
     public DriverDTO updateDriver(@PathVariable Long id, @RequestBody DriverDTO toUpdate) throws Exception{
         return driverService.updateDriver(id, toUpdate);
+    }
+
+    @PostMapping("/coordinates" + "/{driverId}")
+    public void setCoordinatesForDriver(@PathVariable Long driverId, @RequestBody Coordinates coordinates) throws Exception {
+        driverService.setCoordinatesForDriver(driverId, coordinates);
     }
 
 

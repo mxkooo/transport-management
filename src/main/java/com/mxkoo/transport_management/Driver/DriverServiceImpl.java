@@ -1,5 +1,6 @@
 package com.mxkoo.transport_management.Driver;
 
+import com.mxkoo.transport_management.Coordinates.Coordinates;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -63,6 +64,14 @@ public class DriverServiceImpl implements DriverService{
         if (!repository.existsById(id)){
             throw new Exception("Driver doesn't exist");
         }
+    }
+
+    public void setCoordinatesForDriver(Long driverId, Coordinates coordinates) throws Exception{
+        checkIfExists(driverId);
+        Driver driver = DriverMapper.mapToEntity(getDriverById(driverId));
+        driver.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
+        DriverMapper.mapToDTO(repository.save(driver));
+
     }
 
 }

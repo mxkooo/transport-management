@@ -1,6 +1,7 @@
 package com.mxkoo.transport_management.Truck;
 
 
+import com.mxkoo.transport_management.Coordinates.Coordinates;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +59,14 @@ public class TruckServiceImpl implements TruckService {
         if (!truckRepository.existsById(id)){
             throw new Exception("Truck doesn't exist");
         }
+    }
+
+    public void setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception{
+        checkIfExists(truckId);
+        Truck truck = getTruck(truckId);
+        truck.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
+        TruckMapper.mapToDTO(truckRepository.save(truck));
+
     }
 
 }
