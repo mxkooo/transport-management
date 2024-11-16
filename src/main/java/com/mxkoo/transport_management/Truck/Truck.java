@@ -1,10 +1,14 @@
 package com.mxkoo.transport_management.Truck;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
+import com.mxkoo.transport_management.Road.Road;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import java.util.Date;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Table(name = "TRUCK")
@@ -28,6 +32,11 @@ public class Truck {
     @Embedded
     private Coordinates coordinates;
 
-    private Date inspectionDate = new Date();
+    private LocalDate inspectionDate;
 
+    @OneToMany(mappedBy = "truck", cascade =  CascadeType.ALL)
+    private List<Road> roads = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    private TruckStatus truckStatus;
 }

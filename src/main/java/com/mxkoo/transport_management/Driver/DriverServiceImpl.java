@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
@@ -57,6 +58,9 @@ public class DriverServiceImpl implements DriverService{
         if (toUpdate.contactNumber() != null) {
             driver.setContactNumber(toUpdate.contactNumber());
         }
+        if (toUpdate.driverStatus() != null){
+            driver.setDriverStatus(toUpdate.driverStatus());
+        }
         return DriverMapper.mapToDTO(repository.save(driver));
     }
 
@@ -73,5 +77,19 @@ public class DriverServiceImpl implements DriverService{
         DriverMapper.mapToDTO(repository.save(driver));
 
     }
+
+    public Driver getAvailableDriver(){
+         return repository.findAll()
+                .stream()
+                .filter(this::isAvailable)
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Nie znaleziono kierowcy"));
+
+    }
+    public boolean isAvailable(Driver driver){
+        return driver.getDriverStatus()
+                .equals(DriverStatus.WAITING_FOR_ROAD);
+    }
+
 
 }

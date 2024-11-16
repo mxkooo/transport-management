@@ -1,9 +1,11 @@
 package com.mxkoo.transport_management.Truck;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
+import com.mxkoo.transport_management.Road.RoadDTO;
 import lombok.Builder;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.List;
 
 @Builder
 public record TruckDTO(
@@ -11,6 +13,8 @@ public record TruckDTO(
         String licensePlate,
         Integer capacity,
         Coordinates coordinates,
-        Date inspectionDate
+        LocalDate inspectionDate,
+        List<RoadDTO> roads,
+        TruckStatus truckStatus
 ) {
 }
