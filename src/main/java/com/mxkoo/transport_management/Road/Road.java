@@ -1,15 +1,13 @@
 package com.mxkoo.transport_management.Road;
 
 import com.mxkoo.transport_management.Driver.Driver;
+import com.mxkoo.transport_management.RoadStatus.RoadStatus;
 import com.mxkoo.transport_management.Truck.Truck;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.aspectj.lang.annotation.After;
-import org.aspectj.lang.annotation.Before;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 
 @Table(name = "ROAD")

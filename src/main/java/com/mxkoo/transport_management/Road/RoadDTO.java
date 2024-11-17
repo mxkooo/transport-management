@@ -1,6 +1,7 @@
 package com.mxkoo.transport_management.Road;
 
 import com.mxkoo.transport_management.Driver.DriverDTO;
+import com.mxkoo.transport_management.RoadStatus.RoadStatus;
 import com.mxkoo.transport_management.Truck.TruckDTO;
 import lombok.Builder;
 

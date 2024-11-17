@@ -2,9 +2,12 @@ package com.mxkoo.transport_management.Road;
 
 import com.mxkoo.transport_management.Driver.Driver;
 import com.mxkoo.transport_management.Driver.DriverService;
+import com.mxkoo.transport_management.RoadStatus.RoadStatus;
+import com.mxkoo.transport_management.RoadStatus.RoadStatusService;
 import com.mxkoo.transport_management.Truck.Truck;
 import com.mxkoo.transport_management.Truck.TruckService;
 import lombok.AllArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.DateTimeException;
@@ -18,6 +21,7 @@ public class RoadServiceImpl implements RoadService {
     private RoadRepository roadRepository;
     private TruckService truckService;
     private DriverService driverService;
+    private RoadStatusService roadStatusService;
 
 
     public RoadDTO createRoad(RoadDTO roadDTO, int capacity){
@@ -36,7 +40,7 @@ public class RoadServiceImpl implements RoadService {
         road.setArrivalDate(roadDTO.arrivalDate());
         road.setTruck(truck);
         road.setDriver(driver);
-        setStatusForRoad(roadDTO.departureDate(), road);
+        roadStatusService.setStatusForRoad(roadDTO.departureDate(), roadDTO.arrivalDate(), road);
         return RoadMapper.mapToDTO(roadRepository.save(road));
     }
 
@@ -49,11 +53,6 @@ public class RoadServiceImpl implements RoadService {
         }
     }
 
-    private void setStatusForRoad(LocalDate departureDate, Road road){
-        if (LocalDate.now().equals(departureDate)){
-            road.setRoadStatus(RoadStatus.IN_PROGRESS);
-        }
-    }
 
 
 }

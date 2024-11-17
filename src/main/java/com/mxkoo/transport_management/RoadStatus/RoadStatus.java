@@ -1,4 +1,4 @@
-package com.mxkoo.transport_management.Road;
+package com.mxkoo.transport_management.RoadStatus;
 
 public enum RoadStatus {
     IN_FUTURE,
