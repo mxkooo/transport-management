@@ -3,7 +3,6 @@ package com.mxkoo.transport_management.RoadStatus;
 import com.mxkoo.transport_management.Road.Road;
 
 import com.mxkoo.transport_management.Road.RoadRepository;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-//@AllArgsConstructor
 public class RoadStatusServiceImpl implements RoadStatusService {
 
     private RoadRepository roadRepository;
