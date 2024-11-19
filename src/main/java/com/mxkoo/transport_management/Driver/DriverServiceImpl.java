@@ -39,13 +39,13 @@ public class DriverServiceImpl implements DriverService{
         repository.deleteById(id);
     }
 
-    public Driver findDriver(Long id) throws Exception{
-        return repository.findById(id).orElseThrow(Exception::new);
+    public DriverDTO findDriver(Long id) throws Exception{
+        return DriverMapper.mapToDTO(repository.findById(id).orElseThrow(Exception::new));
     }
 
     public DriverDTO updateDriver(Long id, DriverDTO toUpdate) throws Exception {
         checkIfExists(id);
-        Driver driver = findDriver(id);
+        Driver driver = DriverMapper.mapToEntity(findDriver(id));
         if (toUpdate.name() != null) {
             driver.setName(toUpdate.name());
         }

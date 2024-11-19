@@ -40,12 +40,12 @@ public class TruckServiceImpl implements TruckService {
         truckRepository.deleteById(id);
     }
 
-    public Truck getTruck(Long id) throws Exception{
-        return truckRepository.findById(id).orElseThrow(Exception::new);
+    public TruckDTO getTruck(Long id) throws Exception{
+        return TruckMapper.mapToDTO(truckRepository.findById(id).orElseThrow(Exception::new));
     }
     public TruckDTO updateTruck(Long id, TruckDTO toUpdate) throws Exception {
         checkIfExists(id);
-        Truck truck = getTruck(id);
+        Truck truck = TruckMapper.mapToEntity(getTruck(id));
         if (toUpdate.licensePlate() != null) {
             truck.setLicensePlate(toUpdate.licensePlate());
         }
@@ -69,7 +69,7 @@ public class TruckServiceImpl implements TruckService {
 
     public void setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception{
         checkIfExists(truckId);
-        Truck truck = getTruck(truckId);
+        Truck truck = TruckMapper.mapToEntity(getTruck(truckId));
         truck.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
         TruckMapper.mapToDTO(truckRepository.save(truck));
 

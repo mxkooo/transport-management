@@ -2,16 +2,16 @@ package com.mxkoo.transport_management.Road;
 
 import com.mxkoo.transport_management.Driver.Driver;
 import com.mxkoo.transport_management.Driver.DriverService;
-import com.mxkoo.transport_management.RoadStatus.RoadStatus;
 import com.mxkoo.transport_management.RoadStatus.RoadStatusService;
 import com.mxkoo.transport_management.Truck.Truck;
 import com.mxkoo.transport_management.Truck.TruckService;
 import lombok.AllArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 
 @Service
@@ -54,5 +54,22 @@ public class RoadServiceImpl implements RoadService {
     }
 
 
+    public List<RoadDTO> getAllRoads(){
+        List<Road> roads = roadRepository.findAll();
+        return roads.stream()
+                .map(RoadMapper::mapToDTO)
+                .toList();
+    }
+
+    public RoadDTO getRoadById(Long id){
+        checkIfExists(id);
+        return RoadMapper.mapToDTO(roadRepository.findById(id).orElseThrow());
+    }
+
+    private void checkIfExists(Long id) {
+        if (!roadRepository.existsById(id)){
+            throw new NoSuchElementException("Road doesn't exist");
+        }
+    }
 
 }
