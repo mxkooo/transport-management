@@ -12,6 +12,7 @@ public interface DriverService {
     void deleteById(Long id) throws Exception;
     DriverDTO updateDriver(Long id, DriverDTO toUpdate) throws Exception;
     void setCoordinatesForDriver(Long driverId, Coordinates coordinates) throws Exception;
-    public Driver getAvailableDriver();
+    Driver getAvailableDriver();
+    void deleteAllDrivers();
 
 }

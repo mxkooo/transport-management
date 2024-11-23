@@ -12,4 +12,5 @@ public interface TruckService {
     TruckDTO updateTruck(Long id, TruckDTO toUpdate) throws Exception;
     void setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception;
     Truck getAvailableTruck(int capacity);
+    void deleteAllTrucks();
 }

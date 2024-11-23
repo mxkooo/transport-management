@@ -6,4 +6,6 @@ public interface RoadService {
     RoadDTO createRoad(RoadDTO roadDTO, int capacity);
     List<RoadDTO> getAllRoads();
     RoadDTO getRoadById(Long id);
+    RoadDTO updateRoad(Long id, RoadDTO toUpdate);
+    void deleteAllRoads();
 }

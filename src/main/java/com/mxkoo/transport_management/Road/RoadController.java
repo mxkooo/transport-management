@@ -1,5 +1,6 @@
 package com.mxkoo.transport_management.Road;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +13,7 @@ public class RoadController {
     private RoadService roadService;
 
     @PostMapping(RoadRoutes.POST)
-    public RoadDTO createRoad(@RequestBody RoadDTO roadDTO, @RequestParam int capacity){
+    public RoadDTO createRoad(@RequestBody @Valid RoadDTO roadDTO, @RequestParam int capacity){
         return roadService.createRoad(roadDTO, capacity);
     }
 
@@ -24,5 +25,15 @@ public class RoadController {
     @GetMapping(RoadRoutes.GET + "/all")
     public List<RoadDTO> getAllRoads() {
         return roadService.getAllRoads();
+    }
+
+    @PatchMapping(RoadRoutes.UPDATE + "/{id}")
+    public RoadDTO updateRoad(@PathVariable Long id, @RequestBody RoadDTO toUpdate){
+        return roadService.updateRoad(id, toUpdate);
+    }
+
+    @DeleteMapping(RoadRoutes.DELETE + "/all")
+    public void deleteAllRoads(){
+        roadService.deleteAllRoads();
     }
 }

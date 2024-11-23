@@ -35,9 +35,8 @@ public class Road {
     @Column(name = "\"to\"")
     private String to;
 
-    @NotBlank
     private LocalDate departureDate;
-    @NotBlank
+
     private LocalDate arrivalDate;
 
     @ManyToOne

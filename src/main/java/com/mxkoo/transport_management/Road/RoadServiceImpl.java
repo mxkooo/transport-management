@@ -1,15 +1,19 @@
 package com.mxkoo.transport_management.Road;
 
 import com.mxkoo.transport_management.Driver.Driver;
+import com.mxkoo.transport_management.Driver.DriverMapper;
 import com.mxkoo.transport_management.Driver.DriverService;
 import com.mxkoo.transport_management.RoadStatus.RoadStatusService;
 import com.mxkoo.transport_management.Truck.Truck;
+import com.mxkoo.transport_management.Truck.TruckDTO;
+import com.mxkoo.transport_management.Truck.TruckMapper;
 import com.mxkoo.transport_management.Truck.TruckService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -53,12 +57,49 @@ public class RoadServiceImpl implements RoadService {
         }
     }
 
+    public RoadDTO updateRoad(Long id, RoadDTO toUpdate){
+        checkIfExists(id);
+        Road road = RoadMapper.mapToEntity(getRoadById(id));
+        if (ChronoUnit.DAYS.between(LocalDate.now(), road.getDepartureDate()) < 7){
+            throw new IllegalArgumentException("Można edytować trasę do 7 dni przed wyjazdem");
+        }
+
+        if (toUpdate.from() != null) {
+            road.setFrom(toUpdate.from());
+        }
+        if  (toUpdate.via() != null) {
+            road.setVia(toUpdate.via());
+        }
+        if (toUpdate.to() != null) {
+            road.setTo(toUpdate.to());
+        }
+        if(toUpdate.departureDate() != null){
+            road.setDepartureDate(toUpdate.departureDate());
+        }
+        if(toUpdate.arrivalDate() != null){
+            road.setArrivalDate(toUpdate.arrivalDate());
+        }
+        if(toUpdate.truckDTO() != null){
+            road.setTruck(TruckMapper.mapToEntity(toUpdate.truckDTO()));
+        }
+        if(toUpdate.driverDTO() != null){
+            road.setDriver(DriverMapper.mapToEntity(toUpdate.driverDTO()));
+        }
+        if (toUpdate.roadStatus() != null){
+            road.setRoadStatus(toUpdate.roadStatus());
+        }
+        return RoadMapper.mapToDTO(roadRepository.save(road));
+    }
 
     public List<RoadDTO> getAllRoads(){
         List<Road> roads = roadRepository.findAll();
         return roads.stream()
                 .map(RoadMapper::mapToDTO)
                 .toList();
+    }
+    public void deleteAllRoads(){
+        var roads = roadRepository.findAll();
+        roadRepository.deleteAll(roads);
     }
 
     public RoadDTO getRoadById(Long id){

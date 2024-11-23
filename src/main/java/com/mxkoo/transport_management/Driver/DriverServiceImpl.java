@@ -38,6 +38,10 @@ public class DriverServiceImpl implements DriverService{
         checkIfExists(id);
         repository.deleteById(id);
     }
+    public void deleteAllDrivers(){
+        var drivers = repository.findAll();
+        repository.deleteAll(drivers);
+    }
 
     public DriverDTO findDriver(Long id) throws Exception{
         return DriverMapper.mapToDTO(repository.findById(id).orElseThrow(Exception::new));
@@ -79,17 +83,11 @@ public class DriverServiceImpl implements DriverService{
     }
 
     public Driver getAvailableDriver(){
-         return repository.findAll()
+         return repository.findDriverByDriverStatus(DriverStatus.WAITING_FOR_ROAD)
                 .stream()
-                .filter(this::isAvailable)
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Nie znaleziono kierowcy"));
 
     }
-    public boolean isAvailable(Driver driver){
-        return driver.getDriverStatus()
-                .equals(DriverStatus.WAITING_FOR_ROAD);
-    }
-
 
 }

@@ -5,8 +5,6 @@ import com.mxkoo.transport_management.Coordinates.Coordinates;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -38,6 +36,10 @@ public class TruckServiceImpl implements TruckService {
     public void deleteById(Long id) throws Exception{
         checkIfExists(id);
         truckRepository.deleteById(id);
+    }
+    public void deleteAllTrucks(){
+        var trucks = truckRepository.findAll();
+        truckRepository.deleteAll(trucks);
     }
 
     public TruckDTO getTruck(Long id) throws Exception{
@@ -77,17 +79,12 @@ public class TruckServiceImpl implements TruckService {
 
     public Truck getAvailableTruck(int capacity){
 
-          return truckRepository.findTrucksByCapacity(capacity)
+          return truckRepository.findByCapacityAndTruckStatus(capacity, TruckStatus.WAITING_FOR_ROAD)
                 .stream()
-                .filter(this::isAvailable)
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Nie znaleziono pojazdu spełniającego dane wymagania"));
 
     }
 
-    private boolean isAvailable(Truck truck){
-        return truck.getTruckStatus()
-                .equals(TruckStatus.WAITING_FOR_ROAD);
-    }
 
 }

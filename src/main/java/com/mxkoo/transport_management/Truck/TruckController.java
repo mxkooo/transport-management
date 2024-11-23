@@ -34,6 +34,11 @@ public class TruckController {
         truckService.deleteById(id);
     }
 
+    @DeleteMapping(TruckRoutes.DELETE + "/all")
+    public void deleteAllTrucks(){
+        truckService.deleteAllTrucks();
+    }
+
     @PatchMapping(TruckRoutes.UPDATE + "/{id}")
     public TruckDTO updateTruck(@PathVariable Long id, @RequestBody TruckDTO truckDTO) throws Exception {
         return truckService.updateTruck(id,truckDTO);

@@ -33,6 +33,10 @@ public class DriverController {
     public void deleteDriver(@PathVariable Long id) throws Exception{
         driverService.deleteById(id);
     }
+    @DeleteMapping(DriverRoutes.DELETE + "/all")
+    public void deleteAllDrivers(){
+        driverService.deleteAllDrivers();
+    }
 
     @PatchMapping(DriverRoutes.UPDATE + "/{id}")
     public DriverDTO updateDriver(@PathVariable Long id, @RequestBody DriverDTO toUpdate) throws Exception{
