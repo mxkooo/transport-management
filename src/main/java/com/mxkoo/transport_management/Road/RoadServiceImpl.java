@@ -3,11 +3,9 @@ package com.mxkoo.transport_management.Road;
 import com.mxkoo.transport_management.Driver.Driver;
 import com.mxkoo.transport_management.Driver.DriverMapper;
 import com.mxkoo.transport_management.Driver.DriverService;
+import com.mxkoo.transport_management.Driver.DriverStatus;
 import com.mxkoo.transport_management.RoadStatus.RoadStatusService;
-import com.mxkoo.transport_management.Truck.Truck;
-import com.mxkoo.transport_management.Truck.TruckDTO;
-import com.mxkoo.transport_management.Truck.TruckMapper;
-import com.mxkoo.transport_management.Truck.TruckService;
+import com.mxkoo.transport_management.Truck.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +30,7 @@ public class RoadServiceImpl implements RoadService {
         Truck truck = truckService.getAvailableTruck(capacity);
         Driver driver = driverService.getAvailableDriver();
 
-        if (!truck.getTruckStatus().equals("WAITING_FOR_ROAD") || !driver.getDriverStatus().equals("WAITING_FOR_ROAD")){
+        if (!truck.getTruckStatus().equals(TruckStatus.WAITING_FOR_ROAD) || !driver.getDriverStatus().equals(DriverStatus.WAITING_FOR_ROAD)){
             throw new IllegalArgumentException("Pojazd lub kierowca nie jest gotowy do drogi");
         }
         validateDate(roadDTO.departureDate(), roadDTO.arrivalDate());
@@ -48,14 +46,6 @@ public class RoadServiceImpl implements RoadService {
         return RoadMapper.mapToDTO(roadRepository.save(road));
     }
 
-    private void validateDate(LocalDate departureDate, LocalDate arrivalDate){
-        if (arrivalDate.isBefore(departureDate)){
-            throw new DateTimeException("Data przyjazdu musi być po dacie wyjazdu");
-        }
-        if (departureDate.isAfter(arrivalDate)){
-            throw new DateTimeException("Data wyjazdu musi być przed datą przyjazdu");
-        }
-    }
 
     public RoadDTO updateRoad(Long id, RoadDTO toUpdate){
         checkIfExists(id);
@@ -113,4 +103,12 @@ public class RoadServiceImpl implements RoadService {
         }
     }
 
+    private void validateDate(LocalDate departureDate, LocalDate arrivalDate){
+        if (arrivalDate.isBefore(departureDate)){
+            throw new DateTimeException("Data przyjazdu musi być po dacie wyjazdu");
+        }
+        if (departureDate.isAfter(arrivalDate)){
+            throw new DateTimeException("Data wyjazdu musi być przed datą przyjazdu");
+        }
+    }
 }

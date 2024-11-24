@@ -2,6 +2,7 @@ package com.mxkoo.transport_management.Driver;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,10 +31,12 @@ public class DriverController {
     }
 
     @DeleteMapping(DriverRoutes.DELETE + "/{id}")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteDriver(@PathVariable Long id) throws Exception{
         driverService.deleteById(id);
     }
     @DeleteMapping(DriverRoutes.DELETE + "/all")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteAllDrivers(){
         driverService.deleteAllDrivers();
     }
@@ -43,7 +46,7 @@ public class DriverController {
         return driverService.updateDriver(id, toUpdate);
     }
 
-    @PostMapping("/coordinates" + "/{driverId}")
+    @PatchMapping("/coordinates" + "/{driverId}")
     public void setCoordinatesForDriver(@PathVariable Long driverId, @RequestBody Coordinates coordinates) throws Exception {
         driverService.setCoordinatesForDriver(driverId, coordinates);
     }

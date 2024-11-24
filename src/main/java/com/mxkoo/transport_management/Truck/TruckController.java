@@ -3,6 +3,7 @@ package com.mxkoo.transport_management.Truck;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,11 +31,13 @@ public class TruckController {
     }
 
     @DeleteMapping(TruckRoutes.DELETE + "/{id}")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteTruck(@PathVariable Long id) throws Exception{
         truckService.deleteById(id);
     }
 
     @DeleteMapping(TruckRoutes.DELETE + "/all")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteAllTrucks(){
         truckService.deleteAllTrucks();
     }
@@ -44,7 +47,7 @@ public class TruckController {
         return truckService.updateTruck(id,truckDTO);
     }
 
-    @PostMapping("/coordinates/{truckId}")
+    @PatchMapping("/coordinates/{truckId}")
     public void setCoordinatesForTruck(@PathVariable Long truckId, @RequestBody Coordinates coordinates) throws Exception{
         truckService.setCoordinatesForTruck(truckId, coordinates);
     }

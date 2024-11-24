@@ -63,11 +63,6 @@ public class TruckServiceImpl implements TruckService {
         return TruckMapper.mapToDTO(truckRepository.save(truck));
     }
 
-    private void checkIfExists(Long id) throws Exception{
-        if (!truckRepository.existsById(id)){
-            throw new Exception("Truck doesn't exist");
-        }
-    }
 
     public void setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception{
         checkIfExists(truckId);
@@ -78,7 +73,6 @@ public class TruckServiceImpl implements TruckService {
     }
 
     public Truck getAvailableTruck(int capacity){
-
           return truckRepository.findByCapacityAndTruckStatus(capacity, TruckStatus.WAITING_FOR_ROAD)
                 .stream()
                 .findFirst()
@@ -86,5 +80,10 @@ public class TruckServiceImpl implements TruckService {
 
     }
 
+    private void checkIfExists(Long id) throws Exception{
+        if (!truckRepository.existsById(id)){
+            throw new Exception("Truck doesn't exist");
+        }
+    }
 
 }

@@ -68,12 +68,6 @@ public class DriverServiceImpl implements DriverService{
         return DriverMapper.mapToDTO(repository.save(driver));
     }
 
-    private void checkIfExists(Long id) throws Exception {
-        if (!repository.existsById(id)){
-            throw new Exception("Driver doesn't exist");
-        }
-    }
-
     public void setCoordinatesForDriver(Long driverId, Coordinates coordinates) throws Exception{
         checkIfExists(driverId);
         Driver driver = DriverMapper.mapToEntity(getDriverById(driverId));
@@ -88,6 +82,11 @@ public class DriverServiceImpl implements DriverService{
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Nie znaleziono kierowcy"));
 
+    }
+    private void checkIfExists(Long id) throws Exception {
+        if (!repository.existsById(id)){
+            throw new Exception("Driver doesn't exist");
+        }
     }
 
 }
