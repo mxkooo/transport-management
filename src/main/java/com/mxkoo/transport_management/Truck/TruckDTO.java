@@ -3,6 +3,7 @@ package com.mxkoo.transport_management.Truck;
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import com.mxkoo.transport_management.Road.RoadDTO;
 import lombok.Builder;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;

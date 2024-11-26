@@ -4,6 +4,7 @@ package com.mxkoo.transport_management.Truck;
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -64,11 +65,12 @@ public class TruckServiceImpl implements TruckService {
     }
 
 
-    public void setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception{
+    @Transactional
+    public TruckDTO setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception{
         checkIfExists(truckId);
         Truck truck = TruckMapper.mapToEntity(getTruck(truckId));
         truck.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
-        TruckMapper.mapToDTO(truckRepository.save(truck));
+        return TruckMapper.mapToDTO(truckRepository.save(truck));
 
     }
 

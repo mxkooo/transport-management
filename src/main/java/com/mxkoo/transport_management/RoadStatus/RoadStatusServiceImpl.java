@@ -29,21 +29,21 @@ public class RoadStatusServiceImpl implements RoadStatusService {
         synchronized (roads) {
             for (Road road : roads) {
                 if (LocalDate.now().isAfter(road.getDepartureDate()) && LocalDate.now().isBefore(road.getArrivalDate())) {
-                    setStatusForRoad(road.getDepartureDate(), road.getArrivalDate(), road);
+                    setStatusForRoad(road);
                 }
 
             }
         }
     }
 
-    public void setStatusForRoad(LocalDate departureDate, LocalDate arrivalDate, Road road) {
-        if (LocalDate.now().isAfter(departureDate) && LocalDate.now().isBefore(arrivalDate)) {
+    public void setStatusForRoad(Road road) {
+        if (LocalDate.now().isAfter(road.getDepartureDate()) && LocalDate.now().isBefore(road.getArrivalDate())) {
             road.setRoadStatus(RoadStatus.IN_PROGRESS);
         }
-        if (LocalDate.now().isBefore(departureDate)){
+        if (LocalDate.now().isBefore(road.getDepartureDate())){
             road.setRoadStatus(RoadStatus.IN_FUTURE);
         }
-        if (LocalDate.now().isAfter(arrivalDate)){
+        if (LocalDate.now().isAfter(road.getArrivalDate())){
             road.setRoadStatus(RoadStatus.DONE);
         }
     }

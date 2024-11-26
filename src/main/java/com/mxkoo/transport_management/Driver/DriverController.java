@@ -47,8 +47,8 @@ public class DriverController {
     }
 
     @PatchMapping("/coordinates" + "/{driverId}")
-    public void setCoordinatesForDriver(@PathVariable Long driverId, @RequestBody Coordinates coordinates) throws Exception {
-        driverService.setCoordinatesForDriver(driverId, coordinates);
+    public DriverDTO setCoordinatesForDriver(@PathVariable Long driverId, @RequestBody Coordinates coordinates) throws Exception {
+        return driverService.setCoordinatesForDriver(driverId, coordinates);
     }
 
 

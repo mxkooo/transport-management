@@ -1,5 +1,8 @@
 package com.mxkoo.transport_management.Truck;
 
+import com.mxkoo.transport_management.Driver.Driver;
+import com.mxkoo.transport_management.Driver.DriverDTO;
+import com.mxkoo.transport_management.Driver.DriverMapper;
 import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Road.RoadDTO;
 
@@ -12,36 +15,43 @@ import java.util.stream.Collectors;
 public class TruckMapper {
     public static Truck mapToEntity(TruckDTO truckDTO){
 
-        List<Road> roads = Optional.ofNullable(truckDTO.roads())
-                .orElse(Collections.emptyList())
-                .stream()
-                .map(dto -> Road.builder()
-                        .id(dto.id())
-                        .to(dto.to())
-                        .via(dto.via())
-                        .from(dto.from())
-                        .departureDate(dto.departureDate())
-                        .arrivalDate(dto.arrivalDate())
-                        .truck(null)
-                        .driver(null)
-                        .roadStatus(dto.roadStatus())
-                        .build()
-                        ).filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-        return Truck.builder()
+        Truck truck = Truck.builder()
                 .id(truckDTO.id())
                 .licensePlate(truckDTO.licensePlate())
                 .capacity(truckDTO.capacity())
                 .coordinates(truckDTO.coordinates())
                 .inspectionDate(truckDTO.inspectionDate())
-                .roads(roads)
                 .truckStatus(truckDTO.truckStatus())
                 .build();
+
+
+        List<Road> roads = Optional.ofNullable(truckDTO.roads())
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(dto -> {
+                    Driver driver = DriverMapper.mapToEntity(dto.driverDTO());
+                    return Road.builder()
+                            .id(dto.id())
+                            .to(dto.to())
+                            .via(dto.via())
+                            .from(dto.from())
+                            .departureDate(dto.departureDate())
+                            .arrivalDate(dto.arrivalDate())
+                            .truck(truck)
+                            .driver(driver)
+                            .roadStatus(dto.roadStatus())
+                            .build();
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        truck.setRoads(roads);
+
+        return truck;
     }
 
     public static TruckDTO mapToDTO(Truck truck) {
-        List<RoadDTO> roads = Optional.ofNullable(truck.getRoads())
+        List<RoadDTO> roadDTOs = Optional.ofNullable(truck.getRoads())
                 .orElse(Collections.emptyList())
                 .stream()
                 .map(road -> RoadDTO.builder()
@@ -51,19 +61,19 @@ public class TruckMapper {
                         .from(road.getFrom())
                         .departureDate(road.getDepartureDate())
                         .arrivalDate(road.getArrivalDate())
-                        .truckDTO(null)
-                        .driverDTO(null)
+                        .driverDTO(DriverMapper.mapToDTO(road.getDriver())) // Mapowanie kierowcy
                         .roadStatus(road.getRoadStatus())
-                        .build()).filter(Objects::nonNull)
+                        .build())
                 .collect(Collectors.toList());
 
+        // Mapowanie Truck na TruckDTO
         return TruckDTO.builder()
                 .id(truck.getId())
                 .licensePlate(truck.getLicensePlate())
                 .capacity(truck.getCapacity())
                 .coordinates(truck.getCoordinates())
                 .inspectionDate(truck.getInspectionDate())
-                .roads(roads)
+                .roads(roadDTOs) // Dodanie listy RoadDTO
                 .truckStatus(truck.getTruckStatus())
                 .build();
     }

@@ -42,7 +42,7 @@ public class RoadServiceImpl implements RoadService {
         road.setArrivalDate(roadDTO.arrivalDate());
         road.setTruck(truck);
         road.setDriver(driver);
-        roadStatusService.setStatusForRoad(roadDTO.departureDate(), roadDTO.arrivalDate(), road);
+        roadStatusService.setStatusForRoad(road);
         return RoadMapper.mapToDTO(roadRepository.save(road));
     }
 

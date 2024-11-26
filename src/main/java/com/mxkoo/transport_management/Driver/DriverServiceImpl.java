@@ -68,11 +68,11 @@ public class DriverServiceImpl implements DriverService{
         return DriverMapper.mapToDTO(repository.save(driver));
     }
 
-    public void setCoordinatesForDriver(Long driverId, Coordinates coordinates) throws Exception{
+    public DriverDTO setCoordinatesForDriver(Long driverId, Coordinates coordinates) throws Exception{
         checkIfExists(driverId);
         Driver driver = DriverMapper.mapToEntity(getDriverById(driverId));
         driver.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
-        DriverMapper.mapToDTO(repository.save(driver));
+        return DriverMapper.mapToDTO(repository.save(driver));
 
     }
 

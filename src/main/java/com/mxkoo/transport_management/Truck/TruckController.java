@@ -48,7 +48,7 @@ public class TruckController {
     }
 
     @PatchMapping("/coordinates/{truckId}")
-    public void setCoordinatesForTruck(@PathVariable Long truckId, @RequestBody Coordinates coordinates) throws Exception{
-        truckService.setCoordinatesForTruck(truckId, coordinates);
+    public TruckDTO setCoordinatesForTruck(@PathVariable Long truckId, @RequestBody Coordinates coordinates) throws Exception{
+        return truckService.setCoordinatesForTruck(truckId, coordinates);
     }
 }

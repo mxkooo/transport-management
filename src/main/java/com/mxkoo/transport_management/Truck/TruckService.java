@@ -10,7 +10,7 @@ public interface TruckService {
     List<TruckDTO> getAllTrucks();
     void deleteById(Long id) throws Exception;
     TruckDTO updateTruck(Long id, TruckDTO toUpdate) throws Exception;
-    void setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception;
+    TruckDTO setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception;
     Truck getAvailableTruck(int capacity);
     void deleteAllTrucks();
 }
