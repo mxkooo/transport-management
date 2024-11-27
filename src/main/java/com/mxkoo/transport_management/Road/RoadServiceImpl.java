@@ -70,7 +70,7 @@ public class RoadServiceImpl implements RoadService {
             road.setArrivalDate(toUpdate.arrivalDate());
         }
         if(toUpdate.truckDTO() != null){
-            road.setTruck(TruckMapper.mapToEntity(toUpdate.truckDTO()));
+            road.setTruck(TruckMapper.mapToEntityWithRoad(toUpdate.truckDTO()));
         }
         if(toUpdate.driverDTO() != null){
             road.setDriver(DriverMapper.mapToEntity(toUpdate.driverDTO()));

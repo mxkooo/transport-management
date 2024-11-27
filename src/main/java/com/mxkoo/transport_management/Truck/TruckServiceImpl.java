@@ -19,18 +19,18 @@ public class TruckServiceImpl implements TruckService {
         truck.setLicensePlate(truckDTO.licensePlate());
         truck.setCapacity(truckDTO.capacity());
         truck.setInspectionDate(truckDTO.inspectionDate());
-        return TruckMapper.mapToDTO(truckRepository.save(truck));
+        return TruckMapper.mapToDTOWithRoad(truckRepository.save(truck));
     }
 
     public TruckDTO getTruckById(Long id) throws Exception {
         Truck truck = truckRepository.findById(id).orElseThrow(Exception::new);
-        return TruckMapper.mapToDTO(truck);
+        return TruckMapper.mapToDTOWithRoad(truck);
     }
 
     public List<TruckDTO> getAllTrucks(){
         List<Truck> trucks = truckRepository.findAll();
         return trucks.stream()
-                .map(TruckMapper::mapToDTO)
+                .map(TruckMapper::mapToDTOWithRoad)
                 .toList();
     }
 
@@ -44,11 +44,11 @@ public class TruckServiceImpl implements TruckService {
     }
 
     public TruckDTO getTruck(Long id) throws Exception{
-        return TruckMapper.mapToDTO(truckRepository.findById(id).orElseThrow(Exception::new));
+        return TruckMapper.mapToDTOWithRoad(truckRepository.findById(id).orElseThrow(Exception::new));
     }
     public TruckDTO updateTruck(Long id, TruckDTO toUpdate) throws Exception {
         checkIfExists(id);
-        Truck truck = TruckMapper.mapToEntity(getTruck(id));
+        Truck truck = TruckMapper.mapToEntityWithRoad(getTruck(id));
         if (toUpdate.licensePlate() != null) {
             truck.setLicensePlate(toUpdate.licensePlate());
         }
@@ -61,16 +61,16 @@ public class TruckServiceImpl implements TruckService {
         if(toUpdate.truckStatus() != null){
             truck.setTruckStatus(toUpdate.truckStatus());
         }
-        return TruckMapper.mapToDTO(truckRepository.save(truck));
+        return TruckMapper.mapToDTOWithRoad(truckRepository.save(truck));
     }
 
 
     @Transactional
     public TruckDTO setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception{
         checkIfExists(truckId);
-        Truck truck = TruckMapper.mapToEntity(getTruck(truckId));
+        Truck truck = TruckMapper.mapToEntityWithRoad(getTruck(truckId));
         truck.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
-        return TruckMapper.mapToDTO(truckRepository.save(truck));
+        return TruckMapper.mapToDTOWithRoad(truckRepository.save(truck));
 
     }
 

@@ -1,7 +1,6 @@
 package com.mxkoo.transport_management.Truck;
 
 import com.mxkoo.transport_management.Driver.Driver;
-import com.mxkoo.transport_management.Driver.DriverDTO;
 import com.mxkoo.transport_management.Driver.DriverMapper;
 import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Road.RoadDTO;
@@ -13,7 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TruckMapper {
-    public static Truck mapToEntity(TruckDTO truckDTO){
+    public static Truck mapToEntityWithRoad(TruckDTO truckDTO){
 
         Truck truck = Truck.builder()
                 .id(truckDTO.id())
@@ -50,7 +49,8 @@ public class TruckMapper {
         return truck;
     }
 
-    public static TruckDTO mapToDTO(Truck truck) {
+
+    public static TruckDTO mapToDTOWithRoad(Truck truck) {
         List<RoadDTO> roadDTOs = Optional.ofNullable(truck.getRoads())
                 .orElse(Collections.emptyList())
                 .stream()
@@ -61,19 +61,42 @@ public class TruckMapper {
                         .from(road.getFrom())
                         .departureDate(road.getDepartureDate())
                         .arrivalDate(road.getArrivalDate())
-                        .driverDTO(DriverMapper.mapToDTO(road.getDriver())) // Mapowanie kierowcy
+                        .driverDTO(DriverMapper.mapToDTO(road.getDriver()))
+                        .truckDTO(mapToDTO(road.getTruck()))
                         .roadStatus(road.getRoadStatus())
                         .build())
                 .collect(Collectors.toList());
 
-        // Mapowanie Truck na TruckDTO
         return TruckDTO.builder()
                 .id(truck.getId())
                 .licensePlate(truck.getLicensePlate())
                 .capacity(truck.getCapacity())
                 .coordinates(truck.getCoordinates())
                 .inspectionDate(truck.getInspectionDate())
-                .roads(roadDTOs) // Dodanie listy RoadDTO
+                .roads(roadDTOs)
+                .truckStatus(truck.getTruckStatus())
+                .build();
+
+    }
+
+    public static Truck mapToEntity(TruckDTO truckDTO){
+        return Truck.builder()
+                .id(truckDTO.id())
+                .licensePlate(truckDTO.licensePlate())
+                .capacity(truckDTO.capacity())
+                .coordinates(truckDTO.coordinates())
+                .inspectionDate(truckDTO.inspectionDate())
+                .truckStatus(truckDTO.truckStatus())
+                .build();
+    }
+
+    public static TruckDTO mapToDTO(Truck truck){
+        return TruckDTO.builder()
+                .id(truck.getId())
+                .licensePlate(truck.getLicensePlate())
+                .capacity(truck.getCapacity())
+                .coordinates(truck.getCoordinates())
+                .inspectionDate(truck.getInspectionDate())
                 .truckStatus(truck.getTruckStatus())
                 .build();
     }

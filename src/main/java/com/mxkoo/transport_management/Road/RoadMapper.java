@@ -17,7 +17,7 @@ public class RoadMapper {
                 .orElse(null);
 
         Truck truck = Optional.ofNullable(roadDTO.truckDTO())
-                .map(TruckMapper::mapToEntity)
+                .map(TruckMapper::mapToEntityWithRoad)
                 .orElse(null);
 
         return Road.builder()
@@ -41,7 +41,7 @@ public class RoadMapper {
                 .orElse(null);
 
         TruckDTO truckDTO = Optional.ofNullable(road.getTruck())
-                .map(TruckMapper::mapToDTO)
+                .map(TruckMapper::mapToDTOWithRoad)
                 .orElse(null);
 
         return RoadDTO.builder()
