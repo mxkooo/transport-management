@@ -1,6 +1,7 @@
 package com.mxkoo.transport_management.Driver;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
+import com.mxkoo.transport_management.Road.Road;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +75,26 @@ public class DriverServiceImpl implements DriverService{
         driver.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
         return DriverMapper.mapToDTOWithRoad(repository.save(driver));
 
+    }
+
+    public Driver getAvailableDriverNotOnRoad(Road road){
+        Driver driver = repository.findDriverByDriverStatus(DriverStatus.WAITING_FOR_ROAD)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Nie znaleziono kierwocy"));
+        List<Road> roads = driver.getRoads();
+        for (Road eachRoad : roads){
+            if (eachRoad.getArrivalDate().equals(road.getArrivalDate()) &&
+                eachRoad.getDepartureDate().equals(road.getDepartureDate()) ||
+            eachRoad.getArrivalDate().isAfter(road.getArrivalDate()) ||
+                    eachRoad.getDepartureDate().isBefore(road.getDepartureDate()))
+            {
+                throw new NoSuchElementException("Nie znaleziono kierowcy");
+            }
+
+        }
+
+        return driver;
     }
 
     public Driver getAvailableDriver(){
