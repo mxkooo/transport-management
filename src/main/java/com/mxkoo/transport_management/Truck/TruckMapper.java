@@ -28,7 +28,7 @@ public class TruckMapper {
                 .orElse(Collections.emptyList())
                 .stream()
                 .map(dto -> {
-                    Driver driver = DriverMapper.mapToEntity(dto.driverDTO());
+                    Driver driver = DriverMapper.mapToEntityWithRoad(dto.driverDTO());
                     return Road.builder()
                             .id(dto.id())
                             .to(dto.to())
@@ -61,10 +61,11 @@ public class TruckMapper {
                         .from(road.getFrom())
                         .departureDate(road.getDepartureDate())
                         .arrivalDate(road.getArrivalDate())
+                        .truckDTO(TruckMapper.mapToDTO(road.getTruck()))
                         .driverDTO(DriverMapper.mapToDTO(road.getDriver()))
-                        .truckDTO(mapToDTO(road.getTruck()))
                         .roadStatus(road.getRoadStatus())
                         .build())
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         return TruckDTO.builder()

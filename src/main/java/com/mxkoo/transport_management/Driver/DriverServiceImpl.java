@@ -19,18 +19,18 @@ public class DriverServiceImpl implements DriverService{
         driver.setLastName(driverDTO.lastName());
         driver.setEmail(driverDTO.email());
         driver.setContactNumber(driverDTO.contactNumber());
-        return DriverMapper.mapToDTO(repository.save(driver));
+        return DriverMapper.mapToDTOWithRoad(repository.save(driver));
     }
 
     public DriverDTO getDriverById(Long id) throws Exception {
         Driver driver = repository.findById(id).orElseThrow(Exception::new);
-        return DriverMapper.mapToDTO(driver);
+        return DriverMapper.mapToDTOWithRoad(driver);
     }
 
     public List<DriverDTO> getAllDrivers(){
         List<Driver> drivers = repository.findAll();
         return drivers.stream()
-                .map(DriverMapper::mapToDTO)
+                .map(DriverMapper::mapToDTOWithRoad)
                 .toList();
     }
 
@@ -44,12 +44,12 @@ public class DriverServiceImpl implements DriverService{
     }
 
     public DriverDTO findDriver(Long id) throws Exception{
-        return DriverMapper.mapToDTO(repository.findById(id).orElseThrow(Exception::new));
+        return DriverMapper.mapToDTOWithRoad(repository.findById(id).orElseThrow(Exception::new));
     }
 
     public DriverDTO updateDriver(Long id, DriverDTO toUpdate) throws Exception {
         checkIfExists(id);
-        Driver driver = DriverMapper.mapToEntity(findDriver(id));
+        Driver driver = DriverMapper.mapToEntityWithRoad(findDriver(id));
         if (toUpdate.name() != null) {
             driver.setName(toUpdate.name());
         }
@@ -65,14 +65,14 @@ public class DriverServiceImpl implements DriverService{
         if (toUpdate.driverStatus() != null){
             driver.setDriverStatus(toUpdate.driverStatus());
         }
-        return DriverMapper.mapToDTO(repository.save(driver));
+        return DriverMapper.mapToDTOWithRoad(repository.save(driver));
     }
 
     public DriverDTO setCoordinatesForDriver(Long driverId, Coordinates coordinates) throws Exception{
         checkIfExists(driverId);
-        Driver driver = DriverMapper.mapToEntity(getDriverById(driverId));
+        Driver driver = DriverMapper.mapToEntityWithRoad(getDriverById(driverId));
         driver.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
-        return DriverMapper.mapToDTO(repository.save(driver));
+        return DriverMapper.mapToDTOWithRoad(repository.save(driver));
 
     }
 

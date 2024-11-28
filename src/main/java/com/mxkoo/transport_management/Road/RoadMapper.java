@@ -13,7 +13,7 @@ public class RoadMapper {
 
     public  static Road mapToEntity(RoadDTO roadDTO){
         Driver driver = Optional.ofNullable(roadDTO.driverDTO())
-                .map(DriverMapper::mapToEntity)
+                .map(DriverMapper::mapToEntityWithRoad)
                 .orElse(null);
 
         Truck truck = Optional.ofNullable(roadDTO.truckDTO())
@@ -37,7 +37,7 @@ public class RoadMapper {
 
     public static RoadDTO mapToDTO(Road road){
         DriverDTO driverDTO = Optional.ofNullable(road.getDriver())
-                .map(DriverMapper::mapToDTO)
+                .map(DriverMapper::mapToDTOWithRoad)
                 .orElse(null);
 
         TruckDTO truckDTO = Optional.ofNullable(road.getTruck())
