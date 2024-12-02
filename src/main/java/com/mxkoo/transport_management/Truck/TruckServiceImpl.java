@@ -2,6 +2,10 @@ package com.mxkoo.transport_management.Truck;
 
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
+import com.mxkoo.transport_management.Driver.Driver;
+import com.mxkoo.transport_management.Driver.DriverStatus;
+import com.mxkoo.transport_management.Road.Road;
+import com.mxkoo.transport_management.Road.RoadDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,12 +78,16 @@ public class TruckServiceImpl implements TruckService {
 
     }
 
-    public Truck getAvailableTruck(int capacity){
-          return truckRepository.findByCapacityAndTruckStatus(capacity, TruckStatus.WAITING_FOR_ROAD)
+    public Truck getAvailableTruck(int capacity, RoadDTO road) {
+        return truckRepository.findByCapacityAndTruckStatus(capacity, TruckStatus.WAITING_FOR_ROAD)
                 .stream()
+                .filter(truck -> truck.getRoads().stream().noneMatch(eachRoad ->
+                        (eachRoad.getArrivalDate().isBefore(road.arrivalDate()) && eachRoad.getDepartureDate().isAfter(road.arrivalDate())) ||
+                                (eachRoad.getArrivalDate().isBefore(road.departureDate()) && eachRoad.getDepartureDate().isAfter(road.departureDate())) ||
+                                (eachRoad.getArrivalDate().equals(road.arrivalDate()) || eachRoad.getDepartureDate().equals(road.departureDate()))
+                ))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Nie znaleziono pojazdu spełniającego dane wymagania"));
-
+                .orElseThrow(() -> new NoSuchElementException("Nie znaleziono pojazdu"));
     }
 
     private void checkIfExists(Long id) throws Exception{

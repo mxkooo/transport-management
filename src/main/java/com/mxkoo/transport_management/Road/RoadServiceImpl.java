@@ -27,8 +27,8 @@ public class RoadServiceImpl implements RoadService {
 
 
     public RoadDTO createRoad(RoadDTO roadDTO, int capacity){
-        Truck truck = truckService.getAvailableTruck(capacity);
-        Driver driver = driverService.getAvailableDriver();
+        Truck truck = truckService.getAvailableTruck(capacity, roadDTO);
+        Driver driver = driverService.getAvailableDriverNotOnRoad(roadDTO);
 
         if (!truck.getTruckStatus().equals(TruckStatus.WAITING_FOR_ROAD) || !driver.getDriverStatus().equals(DriverStatus.WAITING_FOR_ROAD)){
             throw new IllegalArgumentException("Pojazd lub kierowca nie jest gotowy do drogi");

@@ -1,7 +1,7 @@
 package com.mxkoo.transport_management.Driver;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
-import com.mxkoo.transport_management.Road.Road;
+import com.mxkoo.transport_management.Road.RoadDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -77,33 +77,19 @@ public class DriverServiceImpl implements DriverService{
 
     }
 
-    public Driver getAvailableDriverNotOnRoad(Road road){
-        Driver driver = repository.findDriverByDriverStatus(DriverStatus.WAITING_FOR_ROAD)
+    public Driver getAvailableDriverNotOnRoad(RoadDTO road) {
+        return repository.findDriverByDriverStatus(DriverStatus.WAITING_FOR_ROAD)
                 .stream()
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Nie znaleziono kierwocy"));
-        List<Road> roads = driver.getRoads();
-        for (Road eachRoad : roads){
-            if (eachRoad.getArrivalDate().equals(road.getArrivalDate()) &&
-                eachRoad.getDepartureDate().equals(road.getDepartureDate()) ||
-            eachRoad.getArrivalDate().isAfter(road.getArrivalDate()) ||
-                    eachRoad.getDepartureDate().isBefore(road.getDepartureDate()))
-            {
-                throw new NoSuchElementException("Nie znaleziono kierowcy");
-            }
-
-        }
-
-        return driver;
-    }
-
-    public Driver getAvailableDriver(){
-         return repository.findDriverByDriverStatus(DriverStatus.WAITING_FOR_ROAD)
-                .stream()
+                .filter(driver -> driver.getRoads().stream().noneMatch(eachRoad ->
+                        (eachRoad.getArrivalDate().isBefore(road.arrivalDate()) && eachRoad.getDepartureDate().isAfter(road.arrivalDate())) ||
+                                (eachRoad.getArrivalDate().isBefore(road.departureDate()) && eachRoad.getDepartureDate().isAfter(road.departureDate())) ||
+                                (eachRoad.getArrivalDate().equals(road.arrivalDate()) || eachRoad.getDepartureDate().equals(road.departureDate()))
+                ))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Nie znaleziono kierowcy"));
-
     }
+
+
     private void checkIfExists(Long id) throws Exception {
         if (!repository.existsById(id)){
             throw new Exception("Driver doesn't exist");

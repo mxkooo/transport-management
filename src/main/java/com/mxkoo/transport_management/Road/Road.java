@@ -1,5 +1,6 @@
 package com.mxkoo.transport_management.Road;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mxkoo.transport_management.Driver.Driver;
 import com.mxkoo.transport_management.RoadStatus.RoadStatus;
 import com.mxkoo.transport_management.Truck.Truck;
@@ -41,11 +42,12 @@ public class Road {
 
     @ManyToOne
     @JoinColumn(name = "truck_id")
+    @JsonIgnore
     private Truck truck;
 
     @ManyToOne
     @JoinColumn(name = "driver_id")
-    @ElementCollection
+    @JsonIgnore
     private Driver driver;
 
     @Enumerated(EnumType.STRING)
