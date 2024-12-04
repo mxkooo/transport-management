@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://kit.fontawesome.com/7e5c972fe1.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <title>Mapa</title>
+</head>
+<body>
+<div id="map" style="height: 100vh; width: 100%;"></div>
+
+<style>
+    .icon-large-truck{
+        font-size: 25px;
+        color: black;
+    }
+    .icon-large-driver{
+        font-size: 25px;
+        color: blue;
+    }
+
+</style>
+<script>
+
+    const map = L.map('map').setView([52, 20], 7);
+
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+
+    const handleError = (error, type) => {
+        console.error(`Błąd podczas pobierania danych dla ${type}:`, error);
+        alert(`Nie udało się załadować danych dla ${type}.`);
+    };
+
+ const driverIcon = L.divIcon({
+        className: 'icon-large-driver',
+        iconSize: [50,50],
+        iconAnchor: [10,20],
+        popupAnchor: [0, -32],
+        html: '<i class="fa-solid fa-location-dot"></i>'
+    });
+
+     const truckIcon = L.divIcon({
+        className: 'icon-large-truck',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32],
+        html: '<i class="fa-solid fa-location-dot"></i>'
+    });
+
+    fetch('/location/drivers')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(drivers => {
+            drivers.forEach(driver => {
+                L.marker([driver.coordinates.x, driver.coordinates.y], {icon: driverIcon})
+                    .addTo(map)
+                    .bindPopup(`Kierowca: ${driver.name}; ID: ${driver.id}`);
+
+            });
+        })
+        .catch(error => handleError(error, "kierowców"));
+
+
+    fetch('/location/trucks')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(trucks => {
+            trucks.forEach(truck => {
+                L.marker([truck.coordinates.x, truck.coordinates.y], {icon: truckIcon})
+                .addTo(map)
+                .bindPopup(`Pojazd: ${truck.licensePlate}; ID: ${truck.id}`);
+            });
+        })
+        .catch(error => handleError(error, "pojazdów"));
+</script>
+</body>
+</html>
