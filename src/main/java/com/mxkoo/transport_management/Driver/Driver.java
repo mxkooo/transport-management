@@ -37,7 +37,7 @@ public class Driver {
 
     private Long contactNumber;
 
-    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Road> roads = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

@@ -2,9 +2,6 @@ package com.mxkoo.transport_management.Truck;
 
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
-import com.mxkoo.transport_management.Driver.Driver;
-import com.mxkoo.transport_management.Driver.DriverStatus;
-import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Road.RoadDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -70,13 +67,13 @@ public class TruckServiceImpl implements TruckService {
 
 
     @Transactional
-    public TruckDTO setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception{
-        checkIfExists(truckId);
-        Truck truck = TruckMapper.mapToEntityWithRoad(getTruck(truckId));
+    public TruckDTO setCoordinatesForTruck(Long truckId, Coordinates coordinates) throws Exception {
+        Truck truck = truckRepository.findById(truckId)
+                .orElseThrow(() -> new Exception("Truck not found with ID: " + truckId));
         truck.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
-        return TruckMapper.mapToDTOWithRoad(truckRepository.save(truck));
-
+        return TruckMapper.mapToDTOWithRoad(truck);
     }
+
 
     public Truck getAvailableTruck(int capacity, RoadDTO road) {
         return truckRepository.findByCapacityAndTruckStatus(capacity, TruckStatus.WAITING_FOR_ROAD)

@@ -2,6 +2,7 @@ package com.mxkoo.transport_management.Driver;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import com.mxkoo.transport_management.Road.RoadDTO;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -69,13 +70,14 @@ public class DriverServiceImpl implements DriverService{
         return DriverMapper.mapToDTOWithRoad(repository.save(driver));
     }
 
-    public DriverDTO setCoordinatesForDriver(Long driverId, Coordinates coordinates) throws Exception{
-        checkIfExists(driverId);
-        Driver driver = DriverMapper.mapToEntityWithRoad(getDriverById(driverId));
+    @Transactional
+    public DriverDTO setCoordinatesForDriver(Long driverId, Coordinates coordinates) throws Exception {
+        Driver driver = repository.findById(driverId)
+                .orElseThrow(() -> new Exception("Driver not found with ID: " + driverId));
         driver.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
-        return DriverMapper.mapToDTOWithRoad(repository.save(driver));
-
+        return DriverMapper.mapToDTOWithRoad(driver);
     }
+
 
     public Driver getAvailableDriverNotOnRoad(RoadDTO road) {
         return repository.findDriverByDriverStatus(DriverStatus.WAITING_FOR_ROAD)

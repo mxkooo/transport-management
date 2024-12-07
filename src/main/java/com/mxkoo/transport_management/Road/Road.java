@@ -40,12 +40,12 @@ public class Road {
 
     private LocalDate arrivalDate;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name = "truck_id")
     @JsonIgnore
     private Truck truck;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id")
     @JsonIgnore
     private Driver driver;

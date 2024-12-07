@@ -34,7 +34,7 @@ public class Truck {
 
     private LocalDate inspectionDate;
 
-    @OneToMany(mappedBy = "truck", cascade =  CascadeType.ALL)
+    @OneToMany(mappedBy = "truck", cascade =  CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Road> roads = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
