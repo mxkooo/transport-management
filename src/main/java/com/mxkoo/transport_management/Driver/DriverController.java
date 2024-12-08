@@ -22,8 +22,8 @@ public class DriverController {
     }
 
     @GetMapping(DriverRoutes.GET + "/{id}")
-    public DriverDTO getDriverById(@PathVariable Long id) throws Exception{
-        return driverService.getDriverById(id);
+    public DriverDTO getDriverDTOById(@PathVariable Long id) throws Exception{
+        return driverService.getDriverDTOById(id);
     }
     @GetMapping(DriverRoutes.GET + "/all")
     public List<DriverDTO> getAllDrivers(){

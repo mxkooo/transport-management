@@ -24,7 +24,7 @@ public class DriverServiceImpl implements DriverService{
         return DriverMapper.mapToDTOWithRoad(repository.save(driver));
     }
 
-    public DriverDTO getDriverById(Long id) throws Exception {
+    public DriverDTO getDriverDTOById(Long id) throws Exception {
         Driver driver = repository.findById(id).orElseThrow(Exception::new);
         return DriverMapper.mapToDTOWithRoad(driver);
     }
@@ -91,6 +91,10 @@ public class DriverServiceImpl implements DriverService{
                 .orElseThrow(() -> new NoSuchElementException("Nie znaleziono kierowcy"));
     }
 
+    public Driver getDriverById(Long driverId) throws Exception{
+        Driver driver = repository.findById(driverId).orElseThrow(Exception::new);
+        return driver;
+    }
 
     private void checkIfExists(Long id) throws Exception {
         if (!repository.existsById(id)){
