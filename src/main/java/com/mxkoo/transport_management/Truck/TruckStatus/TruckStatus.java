@@ -1,4 +1,4 @@
-package com.mxkoo.transport_management.Truck;
+package com.mxkoo.transport_management.Truck.TruckStatus;
 
 
 public enum TruckStatus {

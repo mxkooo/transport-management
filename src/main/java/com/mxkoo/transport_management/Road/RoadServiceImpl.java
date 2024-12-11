@@ -3,9 +3,10 @@ package com.mxkoo.transport_management.Road;
 import com.mxkoo.transport_management.Driver.Driver;
 import com.mxkoo.transport_management.Driver.DriverMapper;
 import com.mxkoo.transport_management.Driver.DriverService;
-import com.mxkoo.transport_management.Driver.DriverStatus;
+import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
 import com.mxkoo.transport_management.RoadStatus.RoadStatusService;
 import com.mxkoo.transport_management.Truck.*;
+import com.mxkoo.transport_management.Truck.TruckStatus.TruckStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

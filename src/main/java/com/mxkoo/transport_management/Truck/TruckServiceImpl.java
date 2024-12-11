@@ -3,6 +3,8 @@ package com.mxkoo.transport_management.Truck;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import com.mxkoo.transport_management.Road.RoadDTO;
+import com.mxkoo.transport_management.Truck.TruckStatus.TruckStatus;
+import com.mxkoo.transport_management.Truck.TruckStatus.TruckStatusService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +16,14 @@ import java.util.NoSuchElementException;
 @AllArgsConstructor
 public class TruckServiceImpl implements TruckService {
     private TruckRepository truckRepository;
+    private TruckStatusService truckStatusService;
 
     public TruckDTO createTruck(TruckDTO truckDTO){
         Truck truck = new Truck();
         truck.setLicensePlate(truckDTO.licensePlate());
         truck.setCapacity(truckDTO.capacity());
         truck.setInspectionDate(truckDTO.inspectionDate());
+        truckStatusService.setStatusForTruck(truck);
         return TruckMapper.mapToDTOWithRoad(truckRepository.save(truck));
     }
 

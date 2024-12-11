@@ -2,6 +2,7 @@ package com.mxkoo.transport_management.Truck;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import com.mxkoo.transport_management.Road.Road;
+import com.mxkoo.transport_management.Truck.TruckStatus.TruckStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

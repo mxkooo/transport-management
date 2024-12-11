@@ -1,4 +1,4 @@
-package com.mxkoo.transport_management.Driver;
+package com.mxkoo.transport_management.Driver.DriverStatus;
 
 public enum DriverStatus {
     WAITING_FOR_ROAD,

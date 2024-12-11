@@ -1,6 +1,8 @@
 package com.mxkoo.transport_management.Driver;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
+import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
+import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatusService;
 import com.mxkoo.transport_management.Road.RoadDTO;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -14,6 +16,7 @@ import java.util.NoSuchElementException;
 public class DriverServiceImpl implements DriverService{
 
     private DriverRepository repository;
+    private DriverStatusService driverStatusService;
 
     public DriverDTO createDriver(DriverDTO driverDTO){
         Driver driver = new Driver();
@@ -21,6 +24,7 @@ public class DriverServiceImpl implements DriverService{
         driver.setLastName(driverDTO.lastName());
         driver.setEmail(driverDTO.email());
         driver.setContactNumber(driverDTO.contactNumber());
+        driverStatusService.setStatusForDriver(driver);
         return DriverMapper.mapToDTOWithRoad(repository.save(driver));
     }
 
