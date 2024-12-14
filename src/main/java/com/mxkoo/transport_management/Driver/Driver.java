@@ -1,7 +1,10 @@
 package com.mxkoo.transport_management.Driver;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
+import com.mxkoo.transport_management.Leave.Leave;
 import com.mxkoo.transport_management.Road.Road;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -43,4 +46,10 @@ public class Driver {
 
     @Enumerated(EnumType.STRING)
     private DriverStatus driverStatus;
+
+    private int daysOffLeft = 25;
+
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Leave> leaves;
 }

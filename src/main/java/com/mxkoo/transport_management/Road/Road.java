@@ -1,5 +1,6 @@
 package com.mxkoo.transport_management.Road;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mxkoo.transport_management.Driver.Driver;
 import com.mxkoo.transport_management.RoadStatus.RoadStatus;
@@ -42,12 +43,10 @@ public class Road {
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name = "truck_id")
-    @JsonIgnore
     private Truck truck;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id")
-    @JsonIgnore
     private Driver driver;
 
     @Enumerated(EnumType.STRING)

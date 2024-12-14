@@ -23,6 +23,8 @@ public class DriverMapper {
                 .email(driverDTO.email())
                 .contactNumber(driverDTO.contactNumber())
                 .driverStatus(driverDTO.driverStatus())
+                .daysOffLeft(driverDTO.daysOffLeft())
+                .leaves(driverDTO.leaves())
                 .build();
 
         List<Road> roads = Optional.ofNullable(driverDTO.roads())
@@ -76,6 +78,8 @@ public class DriverMapper {
                 .contactNumber(driver.getContactNumber())
                 .roads(roadDTOs)
                 .driverStatus(driver.getDriverStatus())
+                .daysOffLeft(driver.getDaysOffLeft())
+                .leaves(driver.getLeaves())
                 .build();
     }
 
@@ -88,6 +92,8 @@ public class DriverMapper {
                 .email(driverDTO.email())
                 .contactNumber(driverDTO.contactNumber())
                 .driverStatus(driverDTO.driverStatus())
+                .daysOffLeft(driverDTO.daysOffLeft())
+                .leaves(driverDTO.leaves())
                 .build();
     }
     public static DriverDTO mapToDTO(Driver driver){
@@ -99,6 +105,8 @@ public class DriverMapper {
                 .email(driver.getEmail())
                 .contactNumber(driver.getContactNumber())
                 .driverStatus(driver.getDriverStatus())
+                .daysOffLeft(driver.getDaysOffLeft())
+                .leaves(driver.getLeaves())
                 .build();
     }
 
