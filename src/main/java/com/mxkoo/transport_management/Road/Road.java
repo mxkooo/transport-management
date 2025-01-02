@@ -1,7 +1,5 @@
 package com.mxkoo.transport_management.Road;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mxkoo.transport_management.Driver.Driver;
 import com.mxkoo.transport_management.RoadStatus.RoadStatus;
 import com.mxkoo.transport_management.Truck.Truck;

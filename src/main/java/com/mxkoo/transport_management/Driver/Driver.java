@@ -1,6 +1,6 @@
 package com.mxkoo.transport_management.Driver;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
@@ -42,6 +42,7 @@ public class Driver {
     private Long contactNumber;
 
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Road> roads = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

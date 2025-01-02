@@ -1,6 +1,6 @@
 package com.mxkoo.transport_management.Leave;
 
-import com.mxkoo.transport_management.Driver.Driver;
+import com.mxkoo.transport_management.Driver.DriverDTO;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Builder
 public record LeaveDTO(
         Long id,
-        Driver driver,
+        DriverDTO driverDTO,
         LocalDate start,
         LocalDate end
 ) {

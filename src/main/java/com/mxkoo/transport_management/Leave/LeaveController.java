@@ -28,5 +28,10 @@ public class LeaveController {
         return leaveService.getLeaveById(id);
     }
 
+    @DeleteMapping("/leave/cancel/{leaveId}")
+    public void cancelLeave(@PathVariable Long leaveId) throws Exception {
+        leaveService.cancelLeave(leaveId);
+    }
+
 
 }

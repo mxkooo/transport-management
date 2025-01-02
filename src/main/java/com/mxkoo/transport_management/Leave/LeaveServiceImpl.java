@@ -1,6 +1,7 @@
 package com.mxkoo.transport_management.Leave;
 
 import com.mxkoo.transport_management.Driver.Driver;
+import com.mxkoo.transport_management.Driver.DriverMapper;
 import com.mxkoo.transport_management.Driver.DriverRepository;
 import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
 import jakarta.persistence.EntityNotFoundException;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +23,7 @@ public class LeaveServiceImpl implements LeaveService{
     private final LeaveRepository leaveRepository;
 
     public void createLeaveRequest(Long driverId, LocalDate start, LocalDate end) throws Exception{
-        if (start.isAfter(end)){
+        if (start.isAfter(end) && start.isBefore(LocalDate.now()) && end.isBefore(LocalDate.now())){
             throw new IllegalArgumentException();
         }
 
@@ -40,26 +42,31 @@ public class LeaveServiceImpl implements LeaveService{
         if (driver.getDaysOffLeft() <  leaveDays){
             throw new IllegalStateException("Zbyt malo wolnych dni dostepnych");
         }
+        List<Leave> leaves = driver.getLeaves();
+        for (Leave leave : leaves){
+            if (!(leave.getEnd().isBefore(start) || leave.getStart().isAfter(end))){
+                throw new Exception("Masz juz w tym czasie urlop");
+            }
+        }
 
         for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)){
             int driversOnLeave = leaveRepository.countActiveLeavesOnDate(date);
             if (driversOnLeave >= 2) {
                 throw new IllegalStateException("Za duzo kierowcow na urlopie w dniu: " + date);
             }
-
         }
+
 
         Leave leave = new Leave();
         leave.setDriver(driver);
         leave.setStart(start);
         leave.setEnd(end);
         leaveRepository.save(leave);
-
+        scheduleDriverStatusUpdate(driverId, start, DriverStatus.ON_VACATION);
         driver.setDaysOffLeft(driver.getDaysOffLeft() - leaveDays);
-        driver.setDriverStatus(DriverStatus.ON_VACATION);
         driverRepository.save(driver);
 
-        scheduleDriverStatusUpdate(driverId, end.plusDays(1));
+        scheduleDriverStatusUpdate(driverId, end.plusDays(1), DriverStatus.WAITING_FOR_ROAD);
     }
 
     public List<LeaveDTO> getAllLeaves(){
@@ -73,11 +80,49 @@ public class LeaveServiceImpl implements LeaveService{
         return LeaveMapper.mapToDTO(leave);
     }
 
-    private void scheduleDriverStatusUpdate(Long driverId, LocalDate updateDate) {
+    public LeaveDTO updateLeave(Long leaveId, LeaveDTO toUpdate) throws Exception{
+        checkIfExists(leaveId);
+        Leave leave = LeaveMapper.mapToEntity(getLeaveById(leaveId));
+        if (ChronoUnit.DAYS.between(LocalDate.now(), leave.getStart()) < 7){
+            throw new IllegalArgumentException("Można edytować urlop do 7 dni przed wyjazdem");
+        }
+        Driver driver = driverRepository.getById(toUpdate.driverDTO().id());
+
+        if (toUpdate.driverDTO() != null) {
+            leave.setDriver(driver);
+        }
+        if  (toUpdate.start() != null) {
+            leave.setStart(toUpdate.start());
+        }
+        if (toUpdate.end() != null) {
+            leave.setEnd(toUpdate.end());
+        }
+        return LeaveMapper.mapToDTO(leaveRepository.save(leave));
+    }
+
+    public void cancelLeave(Long leaveId) throws Exception{
+        LeaveDTO leave = getLeaveById(leaveId);
+        if ((ChronoUnit.DAYS.between(LocalDate.now(), leave.start())) < 7){
+            throw new Exception("Możesz odwołać urlop do 7 dni przed datą jego startu.");
+        }
+        int leaveDays = (int) ChronoUnit.DAYS.between(leave.start(), leave.end());
+        leaveRepository.delete(LeaveMapper.mapToEntity(leave));
+        Driver driver = DriverMapper.mapToEntityWithRoad(leave.driverDTO());
+        driver.setDaysOffLeft(driver.getDaysOffLeft() + leaveDays + 1);
+        driverRepository.save(driver);
+    }
+
+    private void checkIfExists(Long id) {
+        if (!leaveRepository.existsById(id)){
+            throw new NoSuchElementException("Leave doesn't exist");
+        }
+    }
+
+    private void scheduleDriverStatusUpdate(Long driverId, LocalDate updateDate, DriverStatus status) {
         Runnable task = () -> {
             Driver driver = driverRepository.findById(driverId)
                     .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono kierowcy"));
-            driver.setDriverStatus(DriverStatus.WAITING_FOR_ROAD);
+            driver.setDriverStatus(status);
             driverRepository.save(driver);
         };
 

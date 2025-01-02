@@ -1,6 +1,6 @@
 package com.mxkoo.transport_management.Truck;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Truck.TruckStatus.TruckStatus;
@@ -37,6 +37,7 @@ public class Truck {
     private LocalDate inspectionDate;
 
     @OneToMany(mappedBy = "truck", cascade =  CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Road> roads = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

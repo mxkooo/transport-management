@@ -7,4 +7,5 @@ public interface LeaveService {
     void createLeaveRequest(Long driverId, LocalDate start, LocalDate end) throws Exception;
     List<LeaveDTO> getAllLeaves();
     LeaveDTO getLeaveById(Long id) throws Exception;
+    void cancelLeave(Long leaveId) throws Exception;
 }
