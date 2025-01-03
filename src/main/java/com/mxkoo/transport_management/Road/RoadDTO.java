@@ -14,6 +14,8 @@ public record RoadDTO(
         String to,
         LocalDate departureDate,
         LocalDate arrivalDate,
+        Double distance,
+        Double price,
         TruckDTO truckDTO,
         DriverDTO driverDTO,
         RoadStatus roadStatus

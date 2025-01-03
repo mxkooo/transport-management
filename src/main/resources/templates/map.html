@@ -90,7 +90,7 @@
         .catch(error => handleError(error, "pojazdów"));
 
 
-// Funkcja geokodująca jedno miasto
+
 async function geocodeCity(city) {
     const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`);
     const data = await response.json();
@@ -101,7 +101,6 @@ async function geocodeCity(city) {
     }
 }
 
-// Funkcja geokodująca wszystkie miasta
 async function geocodeCities(cities) {
     const coordinates = [];
     for (const city of cities) {
@@ -115,7 +114,6 @@ async function geocodeCities(cities) {
     return coordinates;
 }
 
-// Funkcja do wyznaczania trasy z OSRM API
 async function getRouteFromOSRM(startCoords, endCoords) {
     const routeUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${endCoords[1]},${endCoords[0]}?overview=full&geometries=geojson`;
 
@@ -133,8 +131,31 @@ async function getRouteFromOSRM(startCoords, endCoords) {
         throw new Error('Brak dostępnych danych o trasie');
     }
 }
+async function updateRoadDistance(roadId, distance) {
+    const url = `/location/road/distance/${roadId}`;
+    const price = parseFloat((distance * 7).toFixed(2));
 
-// Główna funkcja do obsługi tras
+
+    console.log(`Wysyłanie żądania PATCH do: ${url} z dystansem: ${distance} i ceną: ${price}`);
+
+    try {
+        const response = await fetch(`${url}?distance=${distance}&price=${price}`, {
+            method: 'PATCH',
+        });
+
+        if (!response.ok) {
+            throw new Error(`Błąd podczas aktualizacji dystansu: ${response.status}`);
+        }
+
+        console.log("Dystans został zaktualizowany w bazie danych.");
+    } catch (error) {
+        console.error(`Błąd: ${error.message}`);
+    }
+}
+
+
+
+
 fetch('/location/roads')
     .then(response => {
         if (!response.ok) {
@@ -143,18 +164,18 @@ fetch('/location/roads')
         return response.json();
     })
     .then(async roads => {
-        const routeColors = ['blue', 'green', 'red', 'purple']; // Tablica kolorów tras
+        const routeColors = ['blue', 'green', 'red', 'purple'];
 
         for (let routeCount = 0; routeCount < roads.length; routeCount++) {
             const road = roads[routeCount];
-            const cities = [road.from, ...road.via, road.to]; // Miasta do uwzględnienia
+            const cities = [road.from, ...road.via, road.to];
             const start = road.departureDate;
             const end = road.arrivalDate;
+            const roadId = road.id;
 
             const coordinates = await geocodeCities(cities);
 
             try {
-                // Liczymy dystans od 'from' do 'to', przechodząc przez miasta w 'via'
                 let totalDistance = 0;
                 let allCoordinates = [];
 
@@ -162,30 +183,31 @@ fetch('/location/roads')
                     const startCoords = coordinates[i];
                     const endCoords = coordinates[i + 1];
 
-                    // Pobieramy trasę i dystans między dwiema kolejnymi lokalizacjami
                     const { routeCoordinates, distance } = await getRouteFromOSRM(startCoords, endCoords);
 
-                    // Dodajemy do łącznych współrzędnych i sumujemy dystans
                     allCoordinates = [...allCoordinates, ...routeCoordinates];
                     totalDistance += distance;
                 }
 
-                const totalDistanceInKm = (totalDistance / 1000).toFixed(2); // Konwersja na kilometry
+                const totalDistanceInKm = (totalDistance / 1000).toFixed(2);
+                const cost = (totalDistanceInKm * 7).toFixed(2);
 
-                // Rysowanie trasy na mapie
                 const routeColor = routeColors[routeCount % routeColors.length];
                 const polyline = L.polyline(allCoordinates, { color: routeColor, weight: 4, opacity: 0.7 })
                     .addTo(map);
 
-                // Dodawanie informacji do popup (po kliknięciu na linię)
                 polyline.bindPopup(`
+                    <strong>RoadID:</strong> ${roadId}<br>
                     <strong>Trasa:</strong> ${cities.join(' -> ')}<br>
                     <strong>Start:</strong> ${start}<br>
                     <strong>Koniec:</strong> ${end}<br>
                     <strong>Długość całkowita:</strong> ${totalDistanceInKm} km<br>
+                    <strong>Koszt:</strong> ${cost} zł <br>
                     <strong>DriverID:</strong> ${road.driverId}<br>
                     <strong>TruckID:</strong> ${road.truckId}
                 `);
+
+            await updateRoadDistance(roadId, totalDistanceInKm);
 
             } catch (error) {
                 console.error(`Błąd przy rysowaniu trasy: ${error.message}`);

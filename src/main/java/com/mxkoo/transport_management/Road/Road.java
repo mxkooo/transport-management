@@ -39,6 +39,13 @@ public class Road {
 
     private LocalDate arrivalDate;
 
+    @Column(name = "distance")
+    private Double distance;
+
+    @Column(name = "price")
+    private Double price;
+
+
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name = "truck_id")
     private Truck truck;
