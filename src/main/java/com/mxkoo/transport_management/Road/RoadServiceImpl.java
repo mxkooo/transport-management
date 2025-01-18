@@ -8,12 +8,16 @@ import com.mxkoo.transport_management.RoadStatus.RoadStatusService;
 import com.mxkoo.transport_management.Truck.*;
 import com.mxkoo.transport_management.Truck.TruckStatus.TruckStatus;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 
@@ -25,6 +29,7 @@ public class RoadServiceImpl implements RoadService {
     private TruckService truckService;
     private DriverService driverService;
     private RoadStatusService roadStatusService;
+    private RestTemplate restTemplate;
 
 
     public RoadDTO createRoad(RoadDTO roadDTO, int capacity){
@@ -41,6 +46,11 @@ public class RoadServiceImpl implements RoadService {
         road.setTo(roadDTO.to());
         road.setDepartureDate(roadDTO.departureDate());
         road.setArrivalDate(roadDTO.arrivalDate());
+        Double distance = calculateDistance(roadDTO.from(), roadDTO.via(), roadDTO.to());
+        Double roundDistance = (double) (Math.round(distance * 100)/100);
+        Double price = roundDistance * 7;
+        road.setDistance(roundDistance);
+        road.setPrice(price);
         road.setTruck(truck);
         road.setDriver(driver);
         roadStatusService.setStatusForRoad(road);
@@ -103,6 +113,55 @@ public class RoadServiceImpl implements RoadService {
             throw new NoSuchElementException("Road doesn't exist");
         }
     }
+    public double calculateDistance(String from, String[] via, String to) {
+        List<String> allCities = new ArrayList<>();
+        allCities.add(from);
+        allCities.addAll(List.of(via));
+        allCities.add(to);
+
+        double totalDistance = 0;
+
+        for (int i = 0; i < allCities.size() - 1; i++) {
+            String origin = allCities.get(i);
+            String destination = allCities.get(i + 1);
+
+            totalDistance += calculateSegmentDistance(origin, destination);
+        }
+
+        return totalDistance/1000;
+    }
+
+    private double calculateSegmentDistance(String from, String to) {
+        String url = String.format(
+                "https://router.project-osrm.org/route/v1/driving/%s;%s?overview=false",
+                geocodeCity(from), geocodeCity(to)
+        );
+
+        ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+        if (response.getBody() != null) {
+            List<Map<String, Object>> routes = (List<Map<String, Object>>) response.getBody().get("routes");
+            if (routes != null && !routes.isEmpty()) {
+                return ((Number) routes.get(0).get("distance")).doubleValue();
+            }
+        }
+
+        throw new IllegalStateException("Unable to calculate distance between " + from + " and " + to);
+    }
+
+    private String geocodeCity(String city) {
+        String url = String.format("https://nominatim.openstreetmap.org/search?format=json&q=%s", city);
+
+        ResponseEntity<List> response = restTemplate.getForEntity(url, List.class);
+        if (response.getBody() != null && !response.getBody().isEmpty()) {
+            Map<String, Object> location = (Map<String, Object>) response.getBody().get(0);
+            double lat = Double.parseDouble(location.get("lat").toString());
+            double lon = Double.parseDouble(location.get("lon").toString());
+            return lon + "," + lat; // Format: longitude,latitude
+        }
+
+        throw new IllegalStateException("Unable to geocode city: " + city);
+    }
+
 
     private void validateDate(LocalDate departureDate, LocalDate arrivalDate){
         if (arrivalDate.isBefore(departureDate)){
@@ -110,6 +169,9 @@ public class RoadServiceImpl implements RoadService {
         }
         if (departureDate.isAfter(arrivalDate)){
             throw new DateTimeException("Data wyjazdu musi być przed datą przyjazdu");
+        }
+        if(arrivalDate.isBefore(LocalDate.now()) || departureDate.isBefore(LocalDate.now())){
+            throw new DateTimeException("Data wyjazdu lub przyjazdu nie może być przed datą dzisiejszą");
         }
     }
 }

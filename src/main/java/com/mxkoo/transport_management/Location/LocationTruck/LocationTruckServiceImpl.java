@@ -17,7 +17,8 @@ public class LocationTruckServiceImpl implements LocationTruckService{
                 .map(truck -> new LocationTruckDTO(
                         truck.getId(),
                         truck.getCoordinates(),
-                        truck.getLicensePlate()
+                        truck.getLicensePlate(),
+                        truck.getTruckStatus()
                 ))
                 .collect(Collectors.toList());
     }

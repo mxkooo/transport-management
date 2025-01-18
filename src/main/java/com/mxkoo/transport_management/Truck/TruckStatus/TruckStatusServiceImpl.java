@@ -1,5 +1,6 @@
 package com.mxkoo.transport_management.Truck.TruckStatus;
 
+import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
 import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Road.RoadRepository;
 import com.mxkoo.transport_management.Truck.Truck;
@@ -18,12 +19,13 @@ public class TruckStatusServiceImpl implements TruckStatusService{
     private final TruckRepository truckRepository;
     private final RoadRepository roadRepository;
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 1 0 * * ?")
     public void checkTruckStatuses() {
         List<Truck> trucks = truckRepository.findAll();
         synchronized (trucks) {
             for (Truck truck : trucks) {
                 setStatusForTruck(truck);
+                truckRepository.save(truck);
             }
         }
     }
@@ -35,7 +37,7 @@ public class TruckStatusServiceImpl implements TruckStatusService{
             Road road = firstRoad.get();
             LocalDate today = LocalDate.now();
 
-            if (today.isAfter(road.getDepartureDate()) && today.isBefore(road.getArrivalDate())) {
+            if (!today.isBefore(road.getDepartureDate()) && !today.isAfter(road.getArrivalDate())) {
                 truck.setTruckStatus(TruckStatus.ON_THE_WAY);
             } else {
                 truck.setTruckStatus(TruckStatus.WAITING_FOR_ROAD);

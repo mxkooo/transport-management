@@ -2,6 +2,8 @@ package com.mxkoo.transport_management.Location.LocationRoad;
 
 
 
+import com.mxkoo.transport_management.RoadStatus.RoadStatus;
+
 import java.time.LocalDate;
 
 public record LocationRoadDTO(
@@ -15,6 +17,7 @@ public record LocationRoadDTO(
         Double distance,
         Double price,
         Long driverId,
-        Long truckId
+        Long truckId,
+        RoadStatus roadStatus
 ) {
 }

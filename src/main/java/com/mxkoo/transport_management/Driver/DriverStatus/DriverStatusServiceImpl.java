@@ -21,11 +21,12 @@ public class DriverStatusServiceImpl implements DriverStatusService {
     private final RoadRepository roadRepository;
     private final LeaveRepository leaveRepository;
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 1 0 * * ?")
     public void checkDriverStatuses() {
         List<Driver> drivers = driverRepository.findAll();
         for (Driver driver : drivers) {
             setStatusForDriver(driver);
+            driverRepository.save(driver);
         }
     }
 
@@ -55,7 +56,6 @@ public class DriverStatusServiceImpl implements DriverStatusService {
         if (!statusUpdated) {
             driver.setDriverStatus(DriverStatus.WAITING_FOR_ROAD);
         }
-        driverRepository.save(driver);
     }
 
 

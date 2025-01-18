@@ -18,7 +18,10 @@ public class LocationDriverServiceImpl implements LocationDriverService{
                 .map(driver -> new LocationDriverDTO(
                         driver.getId(),
                         driver.getCoordinates(),
-                        driver.getName()
+                        driver.getName(),
+                        driver.getLastName(),
+                        driver.getContactNumber(),
+                        driver.getDriverStatus()
                 ))
                 .collect(Collectors.toList());
     }

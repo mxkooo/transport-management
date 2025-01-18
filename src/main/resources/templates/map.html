@@ -1,220 +1,330 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://kit.fontawesome.com/7e5c972fe1.js" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <title>Mapa</title>
     <style>
+        body {
+          display: flex;
+          margin: 0;
+          height: 100vh;
+          overflow: hidden;
+        }
+
         #map {
-            height: 100vh;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+          flex: 1;
+          height: 100%;
+          margin: 0;
         }
 
-        .icon-large-truck {
-            font-size: 25px;
-            color: black;
+        #sidebar-driver,
+        #sidebar-truck {
+          position: fixed;
+          right: -300px;
+          top: 0;
+          height: 100%;
+          width: 300px;
+          background-color: #f9f9f9;
+          border-left: 1px solid #ddd;
+          overflow-y: auto;
+          padding: 15px;
+          box-sizing: border-box;
+          transition: right 0.3s ease;
+          z-index: 1000;
         }
 
-        .icon-large-driver {
-            font-size: 25px;
-            color: blue;
+        #sidebar-truck.open,
+        #sidebar-driver.open {
+          right: 0;
+        }
+
+        #sidebar-driver h2,
+        #sidebar-truck h2 {
+          font-size: 18px;
+          margin-bottom: 10px;
+        }
+
+        .driver,
+        .truck {
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          padding: 10px;
+          margin-bottom: 10px;
+          background-color: #fff;
+        }
+
+        .driver h3 {
+          margin: 0 0 5px;
+          font-size: 16px;
+        }
+
+        .driver p {
+          margin: 5px 0;
+          font-size: 14px;
+        }
+
+        #toggle-sidebar-driver-btn {
+          position: fixed;
+          right: 10px;
+          top: 10px;
+          background-color: #007bff;
+          color: #fff;
+          border: none;
+          border-radius: 50%;
+          width: 50px;
+          height: 50px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          z-index: 1001;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #toggle-sidebar-truck-btn {
+          position: fixed;
+          right: 10px;
+          top: 100px;
+          background-color: #007bff;
+          color: #fff;
+          border: none;
+          border-radius: 50%;
+          width: 50px;
+          height: 50px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          z-index: 1001;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #toggle-sidebar-driver-btn i,
+        #toggle-sidebar-truck-btn i {
+          font-size: 24px;
         }
     </style>
 </head>
 <body>
 <div id="map"></div>
+<div id="sidebar-driver">
+    <h2>Lista kierowców</h2>
+    <div id="driver-list"></div>
+</div>
+<div id="sidebar-truck">
+    <h2>Lista pojazdów</h2>
+    <div id="truck-list"></div>
+</div>
+<button id="toggle-sidebar-driver-btn">
+    <i class="fa-solid fa-user"></i>
+</button>
+<button id="toggle-sidebar-truck-btn">
+    <i class="fa-solid fa-truck"></i>
+</button>
 <script>
-    const map = L.map('map').setView([52, 20], 7);
-
+    const map = L.map('map').setView([54, 21.8], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+      attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-
     const handleError = (error, type) => {
-        console.error(`Błąd podczas pobierania danych dla ${type}:`, error);
-        alert(`Nie udało się załadować danych dla ${type}.`);
+      console.error(`Błąd podczas pobierania danych dla ${type}:`, error);
+      alert(`Nie udało się załadować danych dla ${type}.`);
     };
-
     const driverIcon = L.divIcon({
-        className: 'icon-large-driver',
-        iconSize: [50, 50],
-        iconAnchor: [10, 20],
-        popupAnchor: [0, -32],
-        html: '<i class="fa-solid fa-location-dot"></i>'
+      className: 'icon-large-driver',
+      iconSize: [50, 50],
+      iconAnchor: [10, 20],
+      popupAnchor: [0, -32],
+      html: '<i class="fa-solid fa-user"></i>'
     });
-
     const truckIcon = L.divIcon({
-        className: 'icon-large-truck',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32],
-        html: '<i class="fa-solid fa-location-dot"></i>'
+      className: 'icon-large-truck',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32],
+      html: ' <i class="fa-solid fa-truck"></i>'
     });
 
-    fetch('/location/drivers')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(drivers => {
-            drivers.forEach(driver => {
-                L.marker([driver.coordinates.x, driver.coordinates.y], {icon: driverIcon})
-                    .addTo(map)
-                    .bindPopup(`Kierowca: ${driver.name}; ID: ${driver.id}`);
-            });
-        })
-        .catch(error => handleError(error, "kierowców"));
+    const sidebarDriver = document.getElementById('sidebar-driver');
+    const sidebarTruck = document.getElementById('sidebar-truck');
+    const toggleSidebarDriverBtn = document.getElementById('toggle-sidebar-driver-btn');
+    const toggleSidebarTruckBtn = document.getElementById('toggle-sidebar-truck-btn');
+    const driverListContainer = document.getElementById('driver-list');
+    const truckListContainer = document.getElementById('truck-list');
+    let driversLoaded = false;
+    let trucksLoaded = false;
 
-    fetch('/location/trucks')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(trucks => {
-            trucks.forEach(truck => {
-                L.marker([truck.coordinates.x, truck.coordinates.y], {icon: truckIcon})
-                    .addTo(map)
-                    .bindPopup(`Pojazd: ${truck.licensePlate}; ID: ${truck.id}`);
-            });
-        })
-        .catch(error => handleError(error, "pojazdów"));
+    async function reverseGeocode(lat, lon) {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+      const data = await response.json();
+      if (data && data.address) {
+        return data.address.city || data.address.town || data.address.village || 'Nieznana lokalizacja';
+      } else {
+        throw new Error('Nie udało się znaleźć nazwy miejscowości');
+      }
+    }
+
+    function toggleSidebar(sidebar, loadedFlag, endpoint, renderFunction) {
+      sidebar.classList.toggle('open');
+      if (!loadedFlag.state && sidebar.classList.contains('open')) {
+        fetch(endpoint).then(response => response.json()).then(data => {
+          renderFunction(data);
+          loadedFlag.state = true;
+        }).catch(error => console.error(`Błąd przy ładowaniu danych: ${error}`));
+      }
+    }
+    toggleSidebarDriverBtn.addEventListener('click', () => {
+      toggleSidebar(sidebarDriver, driversLoaded, '/location/drivers', drivers => {
+        driverListContainer.innerHTML = drivers.map(driver => `
+
+          <div class="driver">
+              <h3>${driver.name} ${driver.lastName}</h3>
+              <p>
+                  <strong>Telefon:</strong> ${driver.contactNumber}
+              </p>
+              <p>
+                  <strong>Status:</strong> ${driver.driverStatus}
+              </p>
+          </div>
+                `).join('');
+      });
+    });
+  toggleSidebarTruckBtn.addEventListener('click', () => {
+  toggleSidebar(sidebarTruck, trucksLoaded, '/location/trucks', async trucks => {
+    const truckDataWithPlaces = await Promise.all(trucks.map(async truck => {
+      const place = await reverseGeocode(truck.coordinates.x, truck.coordinates.y);
+      return { ...truck, place };
+    }));
+
+    truckListContainer.innerHTML = truckDataWithPlaces.map(truck => `
+      <div class="truck">
+          <h3>${truck.licensePlate}</h3>
+          <p><strong>ID:</strong> ${truck.id}</p>
+          <p><strong>Status:</strong> ${truck.truckStatus}</p>
+          <p><strong>Miejsce:</strong> ${truck.place}</p>
+      </div>`).join('');
+  });
+});
 
 
+    function addMarkers(items, icon, popupTemplate) {
+      items.forEach(item => {
+        const marker = L.marker([item.coordinates.x, item.coordinates.y], {
+          icon
+        }).addTo(map).bindPopup(popupTemplate(item));
+      });
+    }
 
-async function geocodeCity(city) {
-    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`);
-    const data = await response.json();
-    if (data.length > 0) {
+
+    fetch('/drivers/get/all').then(response => response.json()).then(drivers => {
+      addMarkers(drivers, driverIcon, driver => `
+          <h3>${driver.name} ${driver.lastName}</h3>
+          <p><strong>Numer telefonu:</strong> ${driver.contactNumber}</p>
+          <p><strong>Status:</strong> ${driver.driverStatus}</p>`);
+    });
+
+    fetch('/trucks/get/all').then(response => response.json()).then(trucks => {
+      addMarkers(trucks, truckIcon, truck => `
+
+          <h3>${truck.licensePlate}</h3>
+          <p><strong>ID:</strong> ${truck.id}</p>
+          <p><strong>Status:</strong> ${truck.truckStatus}</p>`);
+    });
+
+
+    async function geocodeCity(city) {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`);
+      const data = await response.json();
+      if (data.length > 0) {
         return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-    } else {
+      } else {
         throw new Error(`Nie znaleziono współrzędnych dla miasta: ${city}`);
+      }
     }
-}
-
-async function geocodeCities(cities) {
-    const coordinates = [];
-    for (const city of cities) {
+    async function geocodeCities(cities) {
+      const coordinates = [];
+      for (const city of cities) {
         try {
-            const coords = await geocodeCity(city);
-            coordinates.push(coords);
+          const coords = await geocodeCity(city);
+          coordinates.push(coords);
         } catch (error) {
-            console.error(error);
+          console.error(error);
         }
+      }
+      return coordinates;
     }
-    return coordinates;
-}
-
-async function getRouteFromOSRM(startCoords, endCoords) {
-    const routeUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${endCoords[1]},${endCoords[0]}?overview=full&geometries=geojson`;
-
-    const response = await fetch(routeUrl);
-    if (!response.ok) {
+    async function getRouteFromOSRM(startCoords, endCoords) {
+      const routeUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${endCoords[1]},${endCoords[0]}?overview=full&geometries=geojson`;
+      const response = await fetch(routeUrl);
+      if (!response.ok) {
         throw new Error(`Błąd podczas pobierania trasy: ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.routes && data.routes[0] && data.routes[0].geometry) {
+      }
+      const data = await response.json();
+      if (data.routes && data.routes[0] && data.routes[0].geometry) {
         const distance = data.routes[0].distance;
         const routeCoordinates = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
-        return { routeCoordinates, distance };
-    } else {
+        return {
+          routeCoordinates,
+          distance
+        };
+      } else {
         throw new Error('Brak dostępnych danych o trasie');
+      }
     }
-}
-async function updateRoadDistance(roadId, distance) {
-    const url = `/location/road/distance/${roadId}`;
-    const price = parseFloat((distance * 7).toFixed(2));
+    const routeColors = ['blue', 'green', 'red', 'purple', 'black', 'orange', 'yellow'];
 
+    function drawRoute(road, coordinates, routeColor) {
 
-    console.log(`Wysyłanie żądania PATCH do: ${url} z dystansem: ${distance} i ceną: ${price}`);
+      let totalDistance = 0;
+      let allCoordinates = [];
+      coordinates.forEach((_, i) => {
+        if (i < coordinates.length - 1) {
+          const startCoords = coordinates[i];
+          const endCoords = coordinates[i + 1];
+          getRouteFromOSRM(startCoords, endCoords).then(({
+            routeCoordinates,
+            distance
+          }) => {
+            allCoordinates = [...allCoordinates, ...routeCoordinates];
+            totalDistance += distance;
+            const polyline = L.polyline(allCoordinates, {
+              color: routeColor,
+              weight: 4,
+              opacity: 0.7
+            }).addTo(map);
+            polyline.bindPopup(`
 
-    try {
-        const response = await fetch(`${url}?distance=${distance}&price=${price}`, {
-            method: 'PATCH',
-        });
-
-        if (!response.ok) {
-            throw new Error(`Błąd podczas aktualizacji dystansu: ${response.status}`);
+          <strong>RoadID:</strong> ${road.id}
+          <br>
+              <strong>Trasa:</strong> ${[road.from, ...road.via, road.to].join(' -> ')}
+              <br>
+                  <strong>Długość:</strong> ${(totalDistance / 1000).toFixed(2)} km
+                  <br>
+                      <strong>Koszt:</strong> ${((totalDistance / 1000) * 7).toFixed(2)} zł
+                      <br>
+                    `);
+          });
         }
+      });
 
-        console.log("Dystans został zaktualizowany w bazie danych.");
-    } catch (error) {
-        console.error(`Błąd: ${error.message}`);
     }
-}
-
-
-
-
-fetch('/location/roads')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(async roads => {
-        const routeColors = ['blue', 'green', 'red', 'purple'];
-
-        for (let routeCount = 0; routeCount < roads.length; routeCount++) {
-            const road = roads[routeCount];
-            const cities = [road.from, ...road.via, road.to];
-            const start = road.departureDate;
-            const end = road.arrivalDate;
-            const roadId = road.id;
-
-            const coordinates = await geocodeCities(cities);
-
-            try {
-                let totalDistance = 0;
-                let allCoordinates = [];
-
-                for (let i = 0; i < coordinates.length - 1; i++) {
-                    const startCoords = coordinates[i];
-                    const endCoords = coordinates[i + 1];
-
-                    const { routeCoordinates, distance } = await getRouteFromOSRM(startCoords, endCoords);
-
-                    allCoordinates = [...allCoordinates, ...routeCoordinates];
-                    totalDistance += distance;
-                }
-
-                const totalDistanceInKm = (totalDistance / 1000).toFixed(2);
-                const cost = (totalDistanceInKm * 7).toFixed(2);
-
-                const routeColor = routeColors[routeCount % routeColors.length];
-                const polyline = L.polyline(allCoordinates, { color: routeColor, weight: 4, opacity: 0.7 })
-                    .addTo(map);
-
-                polyline.bindPopup(`
-                    <strong>RoadID:</strong> ${roadId}<br>
-                    <strong>Trasa:</strong> ${cities.join(' -> ')}<br>
-                    <strong>Start:</strong> ${start}<br>
-                    <strong>Koniec:</strong> ${end}<br>
-                    <strong>Długość całkowita:</strong> ${totalDistanceInKm} km<br>
-                    <strong>Koszt:</strong> ${cost} zł <br>
-                    <strong>DriverID:</strong> ${road.driverId}<br>
-                    <strong>TruckID:</strong> ${road.truckId}
-                `);
-
-            await updateRoadDistance(roadId, totalDistanceInKm);
-
-            } catch (error) {
-                console.error(`Błąd przy rysowaniu trasy: ${error.message}`);
-            }
-        }
-    })
-    .catch(error => console.error(`Błąd przy ładowaniu danych o trasach: ${error.message}`));
+  fetch('/location/roads')
+  .then(response => response.json())
+  .then(roads => {
+    roads.forEach((road, index) => {
+      if (road.status === "IN_PROGRESS") {
+        const routeColor = routeColors[index % routeColors.length];
+        geocodeCities([road.from, ...road.via, road.to])
+          .then(coordinates => drawRoute(road, coordinates, routeColor))
+          .catch(error => console.error(`Błąd przy geokodowaniu: ${error}`));
+      }
+    });
+  })
+  .catch(error => console.error(`Błąd przy pobieraniu tras: ${error}`));
 
 </script>
 </body>
