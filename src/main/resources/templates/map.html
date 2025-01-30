@@ -258,13 +258,12 @@
       popupAnchor: [0, -32],
       html: '<i class="fa-solid fa-user"></i>'
     });
-    const truckIcon = L.divIcon({
-      className: 'icon-large-truck',
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32],
-      html: ' <i class="fa-solid fa-truck"></i>'
-    });
+    const truckIcon = L.icon({
+    iconUrl: '/autobus2.png',
+    iconSize: [64, 64],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+});
 
     const sidebarDriver = document.getElementById('sidebar-driver');
     const sidebarTruck = document.getElementById('sidebar-truck');
