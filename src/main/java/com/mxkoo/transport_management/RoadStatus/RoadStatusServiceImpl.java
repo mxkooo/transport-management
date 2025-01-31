@@ -2,6 +2,7 @@ package com.mxkoo.transport_management.RoadStatus;
 
 import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Road.RoadRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ import java.util.List;
 public class RoadStatusServiceImpl implements RoadStatusService {
 
     private final RoadRepository roadRepository;
-
+    @Transactional
     @Scheduled(cron = "0 1 0 * * ?")
     public void checkRoadStatuses() {
         List<Road> roads = roadRepository.findAll();

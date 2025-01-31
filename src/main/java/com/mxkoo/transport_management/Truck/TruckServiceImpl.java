@@ -17,43 +17,47 @@ import java.util.NoSuchElementException;
 public class TruckServiceImpl implements TruckService {
     private TruckRepository truckRepository;
     private TruckStatusService truckStatusService;
+    private TruckMapper truckMapper;
 
+    @Transactional
     public TruckDTO createTruck(TruckDTO truckDTO){
         Truck truck = new Truck();
         truck.setLicensePlate(truckDTO.licensePlate());
         truck.setCapacity(truckDTO.capacity());
         truck.setInspectionDate(truckDTO.inspectionDate());
         truckStatusService.setStatusForTruck(truck);
-        return TruckMapper.mapToDTOWithRoad(truckRepository.save(truck));
+        return truckMapper.mapToDTOWithRoad(truckRepository.save(truck));
     }
-
+    @Transactional
     public TruckDTO getTruckById(Long id) throws Exception {
         Truck truck = truckRepository.findById(id).orElseThrow(Exception::new);
-        return TruckMapper.mapToDTOWithRoad(truck);
+        return truckMapper.mapToDTOWithRoad(truck);
     }
-
+    @Transactional
     public List<TruckDTO> getAllTrucks(){
         List<Truck> trucks = truckRepository.findAll();
         return trucks.stream()
-                .map(TruckMapper::mapToDTOWithRoad)
+                .map(truckMapper::mapToDTOWithRoad)
                 .toList();
     }
-
+    @Transactional
     public void deleteById(Long id) throws Exception{
         checkIfExists(id);
         truckRepository.deleteById(id);
     }
+    @Transactional
     public void deleteAllTrucks(){
         var trucks = truckRepository.findAll();
         truckRepository.deleteAll(trucks);
     }
-
+    @Transactional
     public TruckDTO getTruck(Long id) throws Exception{
-        return TruckMapper.mapToDTOWithRoad(truckRepository.findById(id).orElseThrow(Exception::new));
+        return truckMapper.mapToDTOWithRoad(truckRepository.findById(id).orElseThrow(Exception::new));
     }
+    @Transactional
     public TruckDTO updateTruck(Long id, TruckDTO toUpdate) throws Exception {
         checkIfExists(id);
-        Truck truck = TruckMapper.mapToEntityWithRoad(getTruck(id));
+        Truck truck = truckMapper.mapToEntityWithRoad(getTruck(id));
         if (toUpdate.licensePlate() != null) {
             truck.setLicensePlate(toUpdate.licensePlate());
         }
@@ -66,7 +70,7 @@ public class TruckServiceImpl implements TruckService {
         if(toUpdate.truckStatus() != null){
             truck.setTruckStatus(toUpdate.truckStatus());
         }
-        return TruckMapper.mapToDTOWithRoad(truckRepository.save(truck));
+        return truckMapper.mapToDTOWithRoad(truckRepository.save(truck));
     }
 
 
@@ -75,10 +79,10 @@ public class TruckServiceImpl implements TruckService {
         Truck truck = truckRepository.findById(truckId)
                 .orElseThrow(() -> new Exception("Truck not found with ID: " + truckId));
         truck.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
-        return TruckMapper.mapToDTOWithRoad(truck);
+        return truckMapper.mapToDTOWithRoad(truck);
     }
 
-
+    @Transactional
     public Truck getAvailableTruck(int capacity, RoadDTO road) {
         return truckRepository.findByCapacityAndTruckStatus(capacity, TruckStatus.WAITING_FOR_ROAD)
                 .stream()

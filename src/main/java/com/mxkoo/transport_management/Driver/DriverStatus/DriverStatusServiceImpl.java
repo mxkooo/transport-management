@@ -9,6 +9,7 @@ import com.mxkoo.transport_management.Road.RoadRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,6 +22,7 @@ public class DriverStatusServiceImpl implements DriverStatusService {
     private final RoadRepository roadRepository;
     private final LeaveRepository leaveRepository;
 
+    @Transactional
     @Scheduled(cron = "0 1 0 * * ?")
     public void checkDriverStatuses() {
         List<Driver> drivers = driverRepository.findAll();

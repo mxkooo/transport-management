@@ -5,6 +5,7 @@ import com.mxkoo.transport_management.Driver.DriverMapper;
 import com.mxkoo.transport_management.Driver.DriverRepository;
 import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,9 @@ import java.util.concurrent.TimeUnit;
 public class LeaveServiceImpl implements LeaveService{
     private final DriverRepository driverRepository;
     private final LeaveRepository leaveRepository;
-
+    private final LeaveMapper leaveMapper;
+    private final DriverMapper driverMapper;
+    @Transactional
     public void createLeaveRequest(Long driverId, LocalDate start, LocalDate end) throws Exception{
         if (start.isAfter(end) && start.isBefore(LocalDate.now()) && end.isBefore(LocalDate.now())){
             throw new IllegalArgumentException();
@@ -68,21 +71,22 @@ public class LeaveServiceImpl implements LeaveService{
 
         scheduleDriverStatusUpdate(driverId, end.plusDays(1), DriverStatus.WAITING_FOR_ROAD);
     }
-
+    @Transactional
     public List<LeaveDTO> getAllLeaves(){
         List<Leave> leaves = leaveRepository.findAll();
         return leaves.stream()
-                .map(LeaveMapper::mapToDTO)
+                .map(leaveMapper::mapToDTO)
                 .toList();
     }
+    @Transactional
     public LeaveDTO getLeaveById(Long id) throws Exception {
         Leave leave = leaveRepository.findById(id).orElseThrow(Exception::new);
-        return LeaveMapper.mapToDTO(leave);
+        return leaveMapper.mapToDTO(leave);
     }
-
+    @Transactional
     public LeaveDTO updateLeave(Long leaveId, LeaveDTO toUpdate) throws Exception{
         checkIfExists(leaveId);
-        Leave leave = LeaveMapper.mapToEntity(getLeaveById(leaveId));
+        Leave leave = leaveMapper.mapToEntity(getLeaveById(leaveId));
         if (ChronoUnit.DAYS.between(LocalDate.now(), leave.getStart()) < 7){
             throw new IllegalArgumentException("Można edytować urlop do 7 dni przed wyjazdem");
         }
@@ -97,17 +101,17 @@ public class LeaveServiceImpl implements LeaveService{
         if (toUpdate.end() != null) {
             leave.setEnd(toUpdate.end());
         }
-        return LeaveMapper.mapToDTO(leaveRepository.save(leave));
+        return leaveMapper.mapToDTO(leaveRepository.save(leave));
     }
-
+    @Transactional
     public void cancelLeave(Long leaveId) throws Exception{
         LeaveDTO leave = getLeaveById(leaveId);
         if ((ChronoUnit.DAYS.between(LocalDate.now(), leave.start())) < 7){
             throw new Exception("Możesz odwołać urlop do 7 dni przed datą jego startu.");
         }
         int leaveDays = (int) ChronoUnit.DAYS.between(leave.start(), leave.end());
-        leaveRepository.delete(LeaveMapper.mapToEntity(leave));
-        Driver driver = DriverMapper.mapToEntityWithRoad(leave.driverDTO());
+        leaveRepository.delete(leaveMapper.mapToEntity(leave));
+        Driver driver = driverMapper.mapToEntityWithRoad(leave.driverDTO());
         driver.setDaysOffLeft(driver.getDaysOffLeft() + leaveDays + 1);
         driverRepository.save(driver);
     }
