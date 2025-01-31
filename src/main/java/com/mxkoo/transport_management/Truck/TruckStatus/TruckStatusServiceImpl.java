@@ -1,10 +1,10 @@
 package com.mxkoo.transport_management.Truck.TruckStatus;
 
-import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
 import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Road.RoadRepository;
 import com.mxkoo.transport_management.Truck.Truck;
 import com.mxkoo.transport_management.Truck.TruckRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import java.util.Optional;
 public class TruckStatusServiceImpl implements TruckStatusService{
     private final TruckRepository truckRepository;
     private final RoadRepository roadRepository;
-
+    @Transactional
     @Scheduled(cron = "0 1 0 * * ?")
     public void checkTruckStatuses() {
         List<Truck> trucks = truckRepository.findAll();

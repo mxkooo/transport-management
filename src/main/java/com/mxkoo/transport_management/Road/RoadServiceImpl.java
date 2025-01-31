@@ -7,6 +7,7 @@ import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
 import com.mxkoo.transport_management.RoadStatus.RoadStatusService;
 import com.mxkoo.transport_management.Truck.*;
 import com.mxkoo.transport_management.Truck.TruckStatus.TruckStatus;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,11 @@ public class RoadServiceImpl implements RoadService {
     private DriverService driverService;
     private RoadStatusService roadStatusService;
     private RestTemplate restTemplate;
+    private DriverMapper driverMapper;
+    private RoadMapper roadMapper;
+    private TruckMapper truckMapper;
 
-
+    @Transactional
     public RoadDTO createRoad(RoadDTO roadDTO, int capacity){
         Truck truck = truckService.getAvailableTruck(capacity, roadDTO);
         Driver driver = driverService.getAvailableDriverNotOnRoad(roadDTO);
@@ -54,13 +58,13 @@ public class RoadServiceImpl implements RoadService {
         road.setTruck(truck);
         road.setDriver(driver);
         roadStatusService.setStatusForRoad(road);
-        return RoadMapper.mapToDTO(roadRepository.save(road));
+        return roadMapper.mapToDTO(roadRepository.save(road));
     }
 
-
+    @Transactional
     public RoadDTO updateRoad(Long id, RoadDTO toUpdate){
         checkIfExists(id);
-        Road road = RoadMapper.mapToEntity(getRoadById(id));
+        Road road = roadMapper.mapToEntity(getRoadById(id));
         if (ChronoUnit.DAYS.between(LocalDate.now(), road.getDepartureDate()) < 7){
             throw new IllegalArgumentException("Można edytować trasę do 7 dni przed wyjazdem");
         }
@@ -81,31 +85,32 @@ public class RoadServiceImpl implements RoadService {
             road.setArrivalDate(toUpdate.arrivalDate());
         }
         if(toUpdate.truckDTO() != null){
-            road.setTruck(TruckMapper.mapToEntityWithRoad(toUpdate.truckDTO()));
+            road.setTruck(truckMapper.mapToEntityWithRoad(toUpdate.truckDTO()));
         }
         if(toUpdate.driverDTO() != null){
-            road.setDriver(DriverMapper.mapToEntityWithRoad(toUpdate.driverDTO()));
+            road.setDriver(driverMapper.mapToEntityWithRoad(toUpdate.driverDTO()));
         }
         if (toUpdate.roadStatus() != null){
             road.setRoadStatus(toUpdate.roadStatus());
         }
-        return RoadMapper.mapToDTO(roadRepository.save(road));
+        return roadMapper.mapToDTO(roadRepository.save(road));
     }
-
+    @Transactional
     public List<RoadDTO> getAllRoads(){
         List<Road> roads = roadRepository.findAll();
         return roads.stream()
-                .map(RoadMapper::mapToDTO)
+                .map(roadMapper::mapToDTO)
                 .toList();
     }
+    @Transactional
     public void deleteAllRoads(){
         var roads = roadRepository.findAll();
         roadRepository.deleteAll(roads);
     }
-
+    @Transactional
     public RoadDTO getRoadById(Long id){
         checkIfExists(id);
-        return RoadMapper.mapToDTO(roadRepository.findById(id).orElseThrow());
+        return roadMapper.mapToDTO(roadRepository.findById(id).orElseThrow());
     }
 
     private void checkIfExists(Long id) {
@@ -113,6 +118,7 @@ public class RoadServiceImpl implements RoadService {
             throw new NoSuchElementException("Road doesn't exist");
         }
     }
+    @Transactional
     public double calculateDistance(String from, String[] via, String to) {
         List<String> allCities = new ArrayList<>();
         allCities.add(from);

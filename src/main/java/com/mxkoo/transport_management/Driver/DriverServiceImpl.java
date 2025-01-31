@@ -17,7 +17,9 @@ public class DriverServiceImpl implements DriverService{
 
     private DriverRepository repository;
     private DriverStatusService driverStatusService;
+    private DriverMapper driverMapper;
 
+    @Transactional
     public DriverDTO createDriver(DriverDTO driverDTO){
         Driver driver = new Driver();
         driver.setName(driverDTO.name());
@@ -25,37 +27,38 @@ public class DriverServiceImpl implements DriverService{
         driver.setEmail(driverDTO.email());
         driver.setContactNumber(driverDTO.contactNumber());
         driverStatusService.setStatusForDriver(driver);
-        return DriverMapper.mapToDTOWithRoad(repository.save(driver));
+        return driverMapper.mapToDTOWithRoad(repository.save(driver));
     }
-
+    @Transactional
     public DriverDTO getDriverById(Long id) throws Exception {
         Driver driver = repository.findById(id).orElseThrow(Exception::new);
-        return DriverMapper.mapToDTOWithRoad(driver);
+        return driverMapper.mapToDTOWithRoad(driver);
     }
-
+    @Transactional
     public List<DriverDTO> getAllDrivers(){
         List<Driver> drivers = repository.findAll();
         return drivers.stream()
-                .map(DriverMapper::mapToDTOWithRoad)
+                .map(driverMapper::mapToDTOWithRoad)
                 .toList();
     }
-
+    @Transactional
     public void deleteById(Long id) throws Exception{
         checkIfExists(id);
         repository.deleteById(id);
     }
+    @Transactional
     public void deleteAllDrivers(){
         var drivers = repository.findAll();
         repository.deleteAll(drivers);
     }
-
+    @Transactional
     public DriverDTO findDriver(Long id) throws Exception{
-        return DriverMapper.mapToDTOWithRoad(repository.findById(id).orElseThrow(Exception::new));
+        return driverMapper.mapToDTOWithRoad(repository.findById(id).orElseThrow(Exception::new));
     }
-
+    @Transactional
     public DriverDTO updateDriver(Long id, DriverDTO toUpdate) throws Exception {
         checkIfExists(id);
-        Driver driver = DriverMapper.mapToEntityWithRoad(findDriver(id));
+        Driver driver = driverMapper.mapToEntityWithRoad(findDriver(id));
         if (toUpdate.name() != null) {
             driver.setName(toUpdate.name());
         }
@@ -71,7 +74,7 @@ public class DriverServiceImpl implements DriverService{
         if (toUpdate.driverStatus() != null){
             driver.setDriverStatus(toUpdate.driverStatus());
         }
-        return DriverMapper.mapToDTOWithRoad(repository.save(driver));
+        return driverMapper.mapToDTOWithRoad(repository.save(driver));
     }
 
     @Transactional
@@ -79,10 +82,10 @@ public class DriverServiceImpl implements DriverService{
         Driver driver = repository.findById(driverId)
                 .orElseThrow(() -> new Exception("Driver not found with ID: " + driverId));
         driver.setCoordinates(new Coordinates(coordinates.getX(), coordinates.getY()));
-        return DriverMapper.mapToDTOWithRoad(driver);
+        return driverMapper.mapToDTOWithRoad(driver);
     }
 
-
+    @Transactional
     public Driver getAvailableDriverNotOnRoad(RoadDTO road) {
         return repository.findDriverByDriverStatus(DriverStatus.WAITING_FOR_ROAD)
                 .stream()
