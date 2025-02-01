@@ -22,8 +22,6 @@ import java.util.concurrent.TimeUnit;
 public class LeaveServiceImpl implements LeaveService{
     private final DriverRepository driverRepository;
     private final LeaveRepository leaveRepository;
-    private final LeaveMapper leaveMapper;
-    private final DriverMapper driverMapper;
     @Transactional
     public void createLeaveRequest(Long driverId, LocalDate start, LocalDate end) throws Exception{
         if (start.isAfter(end) && start.isBefore(LocalDate.now()) && end.isBefore(LocalDate.now())){
@@ -75,18 +73,18 @@ public class LeaveServiceImpl implements LeaveService{
     public List<LeaveDTO> getAllLeaves(){
         List<Leave> leaves = leaveRepository.findAll();
         return leaves.stream()
-                .map(leaveMapper::mapToDTO)
+                .map(LeaveMapper::mapToDTO)
                 .toList();
     }
     @Transactional
     public LeaveDTO getLeaveById(Long id) throws Exception {
         Leave leave = leaveRepository.findById(id).orElseThrow(Exception::new);
-        return leaveMapper.mapToDTO(leave);
+        return LeaveMapper.mapToDTO(leave);
     }
     @Transactional
     public LeaveDTO updateLeave(Long leaveId, LeaveDTO toUpdate) throws Exception{
         checkIfExists(leaveId);
-        Leave leave = leaveMapper.mapToEntity(getLeaveById(leaveId));
+        Leave leave = LeaveMapper.mapToEntity(getLeaveById(leaveId));
         if (ChronoUnit.DAYS.between(LocalDate.now(), leave.getStart()) < 7){
             throw new IllegalArgumentException("Można edytować urlop do 7 dni przed wyjazdem");
         }
@@ -101,7 +99,7 @@ public class LeaveServiceImpl implements LeaveService{
         if (toUpdate.end() != null) {
             leave.setEnd(toUpdate.end());
         }
-        return leaveMapper.mapToDTO(leaveRepository.save(leave));
+        return LeaveMapper.mapToDTO(leaveRepository.save(leave));
     }
     @Transactional
     public void cancelLeave(Long leaveId) throws Exception{
@@ -110,8 +108,8 @@ public class LeaveServiceImpl implements LeaveService{
             throw new Exception("Możesz odwołać urlop do 7 dni przed datą jego startu.");
         }
         int leaveDays = (int) ChronoUnit.DAYS.between(leave.start(), leave.end());
-        leaveRepository.delete(leaveMapper.mapToEntity(leave));
-        Driver driver = driverMapper.mapToEntityWithRoad(leave.driverDTO());
+        leaveRepository.delete(LeaveMapper.mapToEntity(leave));
+        Driver driver = DriverMapper.mapToEntityWithRoad(leave.driverDTO());
         driver.setDaysOffLeft(driver.getDaysOffLeft() + leaveDays + 1);
         driverRepository.save(driver);
     }
