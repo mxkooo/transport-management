@@ -50,7 +50,7 @@ class DriverServiceImplTest {
         assertEquals(driverDTO.coordinates().getX(), createdDTO.coordinates().getX());
         assertEquals(driverDTO.coordinates().getY(), createdDTO.coordinates().getY());
         assertEquals(driverDTO.contactNumber(), createdDTO.contactNumber());
-        assertEquals(driverDTO.roads(), null);
+        assertNull(driverDTO.roads());
         assertEquals(driverDTO.driverStatus(), createdDTO.driverStatus());
         assertEquals(driverDTO.daysOffLeft(), createdDTO.daysOffLeft());
         assertEquals(driverDTO.leaves(), createdDTO.leaves());
