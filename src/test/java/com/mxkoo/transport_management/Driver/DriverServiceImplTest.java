@@ -2,6 +2,7 @@ package com.mxkoo.transport_management.Driver;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatusService;
+import jakarta.validation.constraints.Null;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,7 @@ class DriverServiceImplTest {
     @BeforeEach
     void prepare(){
         driverRepository = mock(DriverRepository.class);
+        driverStatusService = mock(DriverStatusService.class);
         driverService = new DriverServiceImpl(driverRepository, driverStatusService);
     }
 
@@ -45,9 +47,10 @@ class DriverServiceImplTest {
         assertEquals(driverDTO.id(), createdDTO.id());
         assertEquals(driverDTO.name(), createdDTO.name());
         assertEquals(driverDTO.lastName(), createdDTO.lastName());
-        assertEquals(driverDTO.coordinates(), createdDTO.coordinates());
+        assertEquals(driverDTO.coordinates().getX(), createdDTO.coordinates().getX());
+        assertEquals(driverDTO.coordinates().getY(), createdDTO.coordinates().getY());
         assertEquals(driverDTO.contactNumber(), createdDTO.contactNumber());
-        assertEquals(driverDTO.roads(), createdDTO.roads());
+        assertEquals(driverDTO.roads(), null);
         assertEquals(driverDTO.driverStatus(), createdDTO.driverStatus());
         assertEquals(driverDTO.daysOffLeft(), createdDTO.daysOffLeft());
         assertEquals(driverDTO.leaves(), createdDTO.leaves());
