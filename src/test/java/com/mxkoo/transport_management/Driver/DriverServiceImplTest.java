@@ -1,11 +1,17 @@
 package com.mxkoo.transport_management.Driver;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
+import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
 import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatusService;
+import com.mxkoo.transport_management.Road.RoadDTO;
+import com.mxkoo.transport_management.RoadStatus.RoadStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -18,7 +24,7 @@ class DriverServiceImplTest {
 
     private DriverStatusService driverStatusService;
 
-    private DriverServiceImpl driverService;
+    private DriverService driverService;
 
     @BeforeEach
     void prepare(){
@@ -88,5 +94,36 @@ class DriverServiceImplTest {
 
         verify(driverRepository, atLeastOnce()).findById(1L);
         verify(driverRepository).save(any(Driver.class));
+    }
+    @Test
+    void getDriver_WhenDoesNotExist(){
+        //given
+        Long id = 1L;
+
+        //when
+        when(driverRepository.findById(id)).thenReturn(Optional.empty());
+        assertThrows(Exception.class, () -> driverService.getDriverById(id));
+        //then
+        verify(driverRepository).findById(id);
+    }
+
+    @Test
+    void getDriver_WhenIsOnTheWay_ShouldThrowException(){
+        //given
+        Driver driver = new Driver();
+        driver.setDriverStatus(DriverStatus.ON_THE_WAY);
+        driver.setRoads(new ArrayList<>());
+        RoadDTO roadDTO = new RoadDTO(1L, "Warszawa", new String[]{"Bydgoszcz"}, "Gdańsk",
+                LocalDate.of(2025, 5, 5), LocalDate.of(2025, 5, 20),
+                400.88, 2800.98, null, null, RoadStatus.IN_FUTURE);
+
+        when(driverRepository.findDriverByDriverStatus(DriverStatus.WAITING_FOR_ROAD))
+                .thenReturn(Collections.emptyList());
+
+        //when & then
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> driverService.getAvailableDriverNotOnRoad(roadDTO));
+        assertEquals("Nie znaleziono kierowcy", exception.getMessage());
+
     }
 }
