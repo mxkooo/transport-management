@@ -32,6 +32,19 @@ public class RoadServiceImpl implements RoadService {
     private RoadStatusService roadStatusService;
     private RestTemplate restTemplate;
 
+    public List<RoadDTO> getAllTruckRoads(Long truckId) {
+        return roadRepository.getRoadByTruckId(truckId)
+                .stream()
+                .map(RoadMapper::mapToDTO)
+                .toList();
+    }
+
+    public List<RoadDTO> getAllDriverRoads(Long driverId) {
+        return roadRepository.getRoadByDriverId(driverId)
+                .stream()
+                .map(RoadMapper::mapToDTO)
+                .toList();
+    }
     @Transactional
     public RoadDTO createRoad(RoadDTO roadDTO, int capacity){
         Truck truck = truckService.getAvailableTruck(capacity, roadDTO);
@@ -109,7 +122,6 @@ public class RoadServiceImpl implements RoadService {
         checkIfExists(id);
         return RoadMapper.mapToDTO(roadRepository.findById(id).orElseThrow());
     }
-
     private void checkIfExists(Long id) {
         if (!roadRepository.existsById(id)){
             throw new NoSuchElementException("Road doesn't exist");

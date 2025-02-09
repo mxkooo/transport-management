@@ -1,6 +1,7 @@
 package com.mxkoo.transport_management.Truck;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
+import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Road.RoadDTO;
 import com.mxkoo.transport_management.RoadStatus.RoadStatus;
 import com.mxkoo.transport_management.Truck.TruckStatus.TruckStatus;
@@ -9,10 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -117,6 +115,7 @@ class TruckServiceImplTest {
 
         assertEquals("Nie znaleziono pojazdu", exception.getMessage());
     }
+
 
 
 
