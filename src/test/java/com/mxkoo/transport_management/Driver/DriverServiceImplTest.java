@@ -3,11 +3,8 @@ package com.mxkoo.transport_management.Driver;
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatus;
 import com.mxkoo.transport_management.Driver.DriverStatus.DriverStatusService;
-import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Road.RoadDTO;
 import com.mxkoo.transport_management.RoadStatus.RoadStatus;
-import com.mxkoo.transport_management.Truck.Truck;
-import com.mxkoo.transport_management.Truck.TruckStatus.TruckStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -126,5 +123,4 @@ class DriverServiceImplTest {
         assertEquals("Nie znaleziono kierowcy", exception.getMessage());
 
     }
-
 }

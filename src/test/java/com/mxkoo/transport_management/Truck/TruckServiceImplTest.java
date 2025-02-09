@@ -1,7 +1,6 @@
 package com.mxkoo.transport_management.Truck;
 
 import com.mxkoo.transport_management.Coordinates.Coordinates;
-import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Road.RoadDTO;
 import com.mxkoo.transport_management.RoadStatus.RoadStatus;
 import com.mxkoo.transport_management.Truck.TruckStatus.TruckStatus;
@@ -115,7 +114,6 @@ class TruckServiceImplTest {
 
         assertEquals("Nie znaleziono pojazdu", exception.getMessage());
     }
-
 
 
 
