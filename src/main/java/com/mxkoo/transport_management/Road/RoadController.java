@@ -23,6 +23,16 @@ public class RoadController {
         return roadService.getRoadById(id);
     }
 
+    @GetMapping(RoadRoutes.GET + "/truckroads"+"/{truckId}")
+    public List<RoadDTO> getAllTruckRoads(@PathVariable Long truckId){
+        return roadService.getAllTruckRoads(truckId);
+    }
+
+    @GetMapping(RoadRoutes.GET + "/driverroads"+"/{driverId}")
+    public List<RoadDTO> getAllDriverRoads(@PathVariable Long driverId){
+        return roadService.getAllDriverRoads(driverId);
+    }
+
     @GetMapping(RoadRoutes.GET + "/all")
     public List<RoadDTO> getAllRoads() {
         return roadService.getAllRoads();
