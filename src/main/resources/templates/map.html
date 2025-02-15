@@ -4,7 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://kit.fontawesome.com/7e5c972fe1.js" crossorigin="anonymous"></script>
+    <script
+            src="https://kit.fontawesome.com/7e5c972fe1.js"
+            crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <title>Mapa</title>
     <style>
@@ -200,15 +205,24 @@
     <i class="fa-solid fa-road"></i>
 </button>
 
-<button id="open-create-driver-form" style="position: fixed; left: 10px; top: 10px; background-color: #28a745; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    <i class="fa-solid fa-user">  + </i>
+<button
+        id="open-create-driver-form"
+        style="position: fixed; left: 10px; top: 10px; background-color: #28a745; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"
+>
+    <i class="fa-solid fa-user"> + </i>
 </button>
 
-<button id="open-create-truck-form" style="position: fixed; left: 10px; top: 100px; background-color: #28a745; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    <i class="fa-solid fa-truck">  + </i>
+<button
+        id="open-create-truck-form"
+        style="position: fixed; left: 10px; top: 100px; background-color: #28a745; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"
+>
+    <i class="fa-solid fa-truck"> + </i>
 </button>
-<button id="open-create-road-form" style="position: fixed; left: 10px; top: 200px; background-color: #28a745; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    <i class="fa-solid fa-road">  + </i>
+<button
+        id="open-create-road-form"
+        style="position: fixed; left: 10px; top: 200px; background-color: #28a745; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"
+>
+    <i class="fa-solid fa-road"> + </i>
 </button>
 <!-- Formularz do tworzenia kierowcy -->
 <div id="create-driver-form">
@@ -399,6 +413,16 @@ toggleSidebarRoadBtn.addEventListener('click', () => {
                 `).join('');
       });
     });
+async function fetchData(endpoint, callback) {
+try {
+const response = await fetch(endpoint);
+if (!response.ok) throw new Error(`Błąd HTTP ${response.status}`);
+const data = await response.json();
+callback(data);
+} catch (error) {
+console.error(`Błąd przy ładowaniu danych z ${endpoint}:`, error);
+}
+}
 
 
     submitDriverButton.addEventListener('click', () => {
@@ -525,28 +549,34 @@ submitRoadButton.addEventListener('click', () => {
     });
 
 
-    function addMarkers(items, icon, popupTemplate) {
-      items.forEach(item => {
-        const marker = L.marker([item.coordinates.x, item.coordinates.y], {
-          icon
-        }).addTo(map).bindPopup(popupTemplate(item));
-      });
-    }
+   function addMarkers(items, icon, popupTemplate) {
+    items.forEach(item => {
+        if (!item.coordinates || typeof item.coordinates.x === "undefined" || typeof item.coordinates.y === "undefined") {
+            console.error("Błąd: brak współrzędnych w elemencie", item);
+            return;
+        }
 
-
-    fetch('/drivers/get/all').then(response => response.json()).then(drivers => {
-      addMarkers(drivers, driverIcon, driver => `
-          <h3>${driver.name} ${driver.lastName}</h3>
-          <p><strong>Numer telefonu:</strong> ${driver.contactNumber}</p>
-          <p><strong>Status:</strong> ${driver.driverStatus}</p>`);
+        const marker = L.marker([item.coordinates.x, item.coordinates.y], { icon })
+            .addTo(map)
+            .bindPopup(popupTemplate(item));
     });
+}
 
-    fetch('/trucks/get/all').then(response => response.json()).then(trucks => {
+    fetchData('/drivers/get/all', drivers => {
+addMarkers(drivers, driverIcon, driver => `
+<h3>${driver.name} ${driver.lastName}</h3>
+<p><strong>Numer telefonu:</strong> ${driver.contactNumber}</p>
+<p><strong>Status:</strong> ${driver.driverStatus}</p>
+`);
+});
+
+
+    fetchData('/trucks/get/all', trucks => {
       addMarkers(trucks, truckIcon, truck => `
-
           <h3>${truck.licensePlate}</h3>
           <p><strong>ID:</strong> ${truck.id}</p>
-          <p><strong>Status:</strong> ${truck.truckStatus}</p>`);
+          <p><strong>Status:</strong> ${truck.truckStatus}</p>
+          `);
     });
 
 
@@ -590,6 +620,31 @@ submitRoadButton.addEventListener('click', () => {
         throw new Error('Brak dostępnych danych o trasie');
       }
     }
+
+    function sendLocation(x, y) {
+    const coordinates = { x, y };
+    stompClient.send("/app/location", {}, JSON.stringify(coordinates));
+}
+var driverMarkers = L.layerGroup().addTo(map);
+var drivers = {};
+
+stompClient.connect({}, function () {
+stompClient.subscribe('/topic/locations', function (message) {
+  var data = JSON.parse(message.body);
+  var { driverId, x, y } = data;
+
+  if (drivers[driverId]) {
+      drivers[driverId].setLatLng([x, y]);
+  } else {
+      drivers[driverId] = L.marker([x, y], { icon: driverIcon })
+          .bindPopup(`Driver ID: ${driverId}`)
+          .addTo(driverMarkers);
+  }
+});
+});
+
+
+
     const routeColors = ['blue', 'green', 'red', 'purple', 'black', 'orange', 'yellow'];
 
     function drawRoute(road, coordinates, routeColor) {
@@ -640,7 +695,6 @@ submitRoadButton.addEventListener('click', () => {
     });
   })
   .catch(error => console.error(`Błąd przy pobieraniu tras: ${error}`));
-
 </script>
 </body>
 </html>
