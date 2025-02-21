@@ -526,40 +526,50 @@ submitRoadButton.addEventListener('click', () => {
 
 let markers = {};
 
-function addMarkers(items, icon, popupTemplate) {
+function addMarkers(items, icon, popupTemplate, type) {
   items.forEach(item => {
-    if (markers[item.id]) {
-      map.removeLayer(markers[item.id]);
+    const key = `${type}_${item.id}`; // Unikalny klucz
+    if (markers[key]) {
+      map.removeLayer(markers[key]);
     }
     const marker = L.marker([item.coordinates.x, item.coordinates.y], {
       icon
     }).addTo(map).bindPopup(popupTemplate(item));
-    markers[item.id] = marker;
+    markers[key] = marker;
   });
 }
 
+function fetchLocation(url, icon, popupContent, type) {
+    fetch(url)
+        .then(response => response.json())
+        .then(data => addMarkers(data, icon, popupContent, type))
+        .catch(error => console.error(`Błąd pobierania lokalizacji z ${url}:`, error));
+}
 
-    function fetchLocation() {
-        fetch('/location/drivers')
-            .then(response => response.json())
-            .then(drivers => {
-                addMarkers(drivers, driverIcon, driver => `
-            <h3>ID: ${driver.id}</h3>
-            <p>${driver.name} ${driver.lastName}</p>
-            <p><strong>Numer telefonu:</strong> ${driver.contactNumber}</p>
-            <p><strong>Status:</strong> ${driver.driverStatus}</p>`);
-            })
-            .catch(error => console.error("Błąd pobierania lokalizacji:", error));
-    }
+function updateLocations() {
+    fetchLocation('/location/drivers', driverIcon, driver => `
+        <h3>ID: ${driver.id}</h3>
+        <p>${driver.name} ${driver.lastName}</p>
+        <p><strong>Numer telefonu:</strong> ${driver.contactNumber}</p>
+        <p><strong>Status:</strong> ${driver.driverStatus}</p>
+    `, "driver");
 
-    setInterval(fetchLocation, 5000);
+    fetchLocation('/location/trucks', truckIcon, truck => `
+        <h3>ID: ${truck.id}</h3>
+        <p>${truck.licensePlate}</p>
+        <p><strong>Status:</strong> ${truck.truckStatus}</p>
+    `, "truck");
+}
 
-    fetch('/location/trucks').then(response => response.json()).then(trucks => {
-      addMarkers(trucks, truckIcon, truck => `
-          <h3>${truck.licensePlate}</h3>
-          <p><strong>ID:</strong> ${truck.id}</p>
-          <p><strong>Status:</strong> ${truck.truckStatus}</p>`);
-    });
+setInterval(updateLocations, 5000);
+
+
+<!--    fetch('/location/trucks').then(response => response.json()).then(trucks => {-->
+<!--      addMarkers(trucks, truckIcon, truck => `-->
+<!--          <h3>${truck.licensePlate}</h3>-->
+<!--          <p><strong>ID:</strong> ${truck.id}</p>-->
+<!--          <p><strong>Status:</strong> ${truck.truckStatus}</p>`);-->
+<!--    });-->
 
 
 
