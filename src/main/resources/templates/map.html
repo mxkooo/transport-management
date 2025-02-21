@@ -524,26 +524,38 @@ submitRoadButton.addEventListener('click', () => {
         }
     });
 
+let markers = {};
 
-    function addMarkers(items, icon, popupTemplate) {
-      items.forEach(item => {
-        const marker = L.marker([item.coordinates.x, item.coordinates.y], {
-          icon
-        }).addTo(map).bindPopup(popupTemplate(item));
-      });
+function addMarkers(items, icon, popupTemplate) {
+  items.forEach(item => {
+    if (markers[item.id]) {
+      map.removeLayer(markers[item.id]);
+    }
+    const marker = L.marker([item.coordinates.x, item.coordinates.y], {
+      icon
+    }).addTo(map).bindPopup(popupTemplate(item));
+    markers[item.id] = marker;
+  });
+}
+
+
+    function fetchLocation() {
+        fetch('/location/drivers')
+            .then(response => response.json())
+            .then(drivers => {
+                addMarkers(drivers, driverIcon, driver => `
+            <h3>ID: ${driver.id}</h3>
+            <p>${driver.name} ${driver.lastName}</p>
+            <p><strong>Numer telefonu:</strong> ${driver.contactNumber}</p>
+            <p><strong>Status:</strong> ${driver.driverStatus}</p>`);
+            })
+            .catch(error => console.error("Błąd pobierania lokalizacji:", error));
     }
 
+    setInterval(fetchLocation, 5000);
 
-    fetch('/drivers/get/all').then(response => response.json()).then(drivers => {
-      addMarkers(drivers, driverIcon, driver => `
-          <h3>${driver.name} ${driver.lastName}</h3>
-          <p><strong>Numer telefonu:</strong> ${driver.contactNumber}</p>
-          <p><strong>Status:</strong> ${driver.driverStatus}</p>`);
-    });
-
-    fetch('/trucks/get/all').then(response => response.json()).then(trucks => {
+    fetch('/location/trucks').then(response => response.json()).then(trucks => {
       addMarkers(trucks, truckIcon, truck => `
-
           <h3>${truck.licensePlate}</h3>
           <p><strong>ID:</strong> ${truck.id}</p>
           <p><strong>Status:</strong> ${truck.truckStatus}</p>`);
@@ -591,42 +603,45 @@ submitRoadButton.addEventListener('click', () => {
       }
     }
     const routeColors = ['blue', 'green', 'red', 'purple', 'black', 'orange', 'yellow'];
+async function drawRoute(road, coordinates, routeColor) {
+    let totalDistance = 0;
+    let allCoordinates = [];
 
-    function drawRoute(road, coordinates, routeColor) {
+    for (let i = 0; i < coordinates.length - 1; i++) {
+        const startCoords = coordinates[i];
+        const endCoords = coordinates[i + 1];
 
-      let totalDistance = 0;
-      let allCoordinates = [];
-      coordinates.forEach((_, i) => {
-        if (i < coordinates.length - 1) {
-          const startCoords = coordinates[i];
-          const endCoords = coordinates[i + 1];
-          getRouteFromOSRM(startCoords, endCoords).then(({
-            routeCoordinates,
-            distance
-          }) => {
-            allCoordinates = [...allCoordinates, ...routeCoordinates];
+        try {
+            const { routeCoordinates, distance } = await getRouteFromOSRM(startCoords, endCoords);
+            allCoordinates = [...allCoordinates, ...routeCoordinates]; // Dodajemy kolejne segmenty trasy
             totalDistance += distance;
-            const polyline = L.polyline(allCoordinates, {
-              color: routeColor,
-              weight: 4,
-              opacity: 0.7
-            }).addTo(map);
-            polyline.bindPopup(`
-
-          <strong>RoadID:</strong> ${road.id}
-          <br>
-              <strong>Trasa:</strong> ${[road.from, ...road.via, road.to].join(' -> ')}
-              <br>
-                  <strong>Długość:</strong> ${(totalDistance / 1000).toFixed(2)} km
-                  <br>
-                      <strong>Koszt:</strong> ${((totalDistance / 1000) * 7).toFixed(2)} zł
-                      <br>
-                    `);
-          });
+        } catch (error) {
+            console.error(`Błąd pobierania trasy dla segmentu ${i}:`, error);
         }
-      });
-
     }
+
+    if (allCoordinates.length > 0) {
+        const polyline = L.polyline(allCoordinates, {
+            color: routeColor,
+            weight: 4,
+            opacity: 0.7
+        }).addTo(map);
+
+        polyline.bindPopup(`
+            <strong>RoadID:</strong> ${road.id}
+            <br>
+            <strong>Trasa:</strong> ${[road.from, ...road.via, road.to].join(' -> ')}
+            <br>
+            <strong>Długość:</strong> ${(totalDistance / 1000).toFixed(2)} km
+            <br>
+            <strong>Koszt:</strong> ${((totalDistance / 1000) * 7).toFixed(2)} zł
+            <br>
+        `);
+    } else {
+        console.warn("Brak danych do rysowania trasy.");
+    }
+}
+
   fetch('/location/roads')
   .then(response => response.json())
   .then(roads => {
