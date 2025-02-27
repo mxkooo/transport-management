@@ -7,43 +7,29 @@ import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Optional;
+
 @Service
-@PropertySource("classpath:application.properties")
-public class SmsService{
-    private RoadRepository roadRepository;
+public class SmsCreator {
+    private final RoadRepository roadRepository;
     @Value("${twilio.account_sid}")
     private String accountSid;
 
     @Value("${twilio.auth_token}")
     private String authToken;
-    public SmsService(RoadRepository roadRepository) {
+    public SmsCreator(RoadRepository roadRepository) {
         this.roadRepository = roadRepository;
     }
     @PostConstruct
     public void initTwilio() {
         Twilio.init(accountSid, authToken);
     }
-    @Scheduled(cron = "0 0 0 * * *")
-    public void checkRoads(){
-        List<Road> roads = roadRepository.findAll();
-        for (Road road : roads) {
-            if (ChronoUnit.DAYS.between(LocalDate.now(), road.getDepartureDate()) == 1){
-                createAndSendSMS(road.getDriver());
-            }
-        }
 
-    }
-
-    private void createAndSendSMS(Driver driver) {
+    public void createAndSendSMS(Driver driver) {
         String recipientNumber = driver.getContactNumber().toString();
         String twilioNumber = System.getenv("TWILIO_NUMBER");
         Optional<Road> roadOptional = roadRepository.findFirstByDriverIdOrderByDepartureDateAsc(driver.getId());
@@ -57,6 +43,4 @@ public class SmsService{
         }
 
     }
-
-
 }
