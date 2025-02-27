@@ -6,8 +6,9 @@ import com.mxkoo.transport_management.Road.RoadRepository;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
-import lombok.AllArgsConstructor;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -15,17 +16,20 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
-
 @Service
-@AllArgsConstructor
+@PropertySource("classpath:application.properties")
 public class SmsService{
     private RoadRepository roadRepository;
-    @Value("${TWILIO_SID}")
+    @Value("${twilio.account_sid}")
     private String accountSid;
 
-    @Value("${TWILIO_TOKEN}")
+    @Value("${twilio.auth_token}")
     private String authToken;
-    public SmsService() {
+    public SmsService(RoadRepository roadRepository) {
+        this.roadRepository = roadRepository;
+    }
+    @PostConstruct
+    public void initTwilio() {
         Twilio.init(accountSid, authToken);
     }
     @Scheduled(cron = "0 0 0 * * *")
