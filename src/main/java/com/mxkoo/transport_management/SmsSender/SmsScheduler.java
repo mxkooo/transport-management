@@ -14,14 +14,14 @@ import java.util.List;
 @Service
 public class SmsScheduler {
     private final RoadRepository roadRepository;
-    private final SmsCreator smsCreator;
+    private final SmsSender smsSender;
 
     @Scheduled(cron = "0 0 0 * * *")
     public void checkRoads(){
         List<Road> roads = roadRepository.findAll();
         for (Road road : roads) {
             if (ChronoUnit.DAYS.between(LocalDate.now(), road.getDepartureDate()) == 1){
-                smsCreator.createAndSendSMS(road.getDriver());
+                smsSender.createAndSendSMS(road.getDriver());
             }
         }
 
