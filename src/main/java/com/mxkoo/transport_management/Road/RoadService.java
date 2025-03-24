@@ -10,4 +10,5 @@ public interface RoadService {
     RoadDTO getRoadById(Long id);
     RoadDTO updateRoad(Long id, RoadDTO toUpdate);
     void deleteAllRoads();
+    void deleteById(Long id) throws Exception;
 }

@@ -106,6 +106,11 @@ public class RoadServiceImpl implements RoadService {
         return RoadMapper.mapToDTO(roadRepository.save(road));
     }
     @Transactional
+    public void deleteById(Long id) throws Exception{
+        checkIfExists(id);
+        roadRepository.deleteById(id);
+    }
+    @Transactional
     public List<RoadDTO> getAllRoads(){
         List<Road> roads = roadRepository.findAll();
         return roads.stream()

@@ -3,6 +3,7 @@ package com.mxkoo.transport_management.Road;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,9 +13,10 @@ import java.util.List;
 @RequestMapping(RoadRoutes.ROOT)
 public class RoadController {
     private RoadService roadService;
-
+    private final SimpMessagingTemplate messagingTemplate;
     @PostMapping(RoadRoutes.POST)
     public RoadDTO createRoad(@RequestBody @Valid RoadDTO roadDTO, @RequestParam int capacity){
+        messagingTemplate.convertAndSend("/topic/roads", roadService.getAllRoads());
         return roadService.createRoad(roadDTO, capacity);
     }
 
@@ -40,6 +42,7 @@ public class RoadController {
 
     @PatchMapping(RoadRoutes.UPDATE + "/{id}")
     public RoadDTO updateRoad(@PathVariable Long id, @RequestBody RoadDTO toUpdate){
+        messagingTemplate.convertAndSend("/topic/roads", roadService.getAllRoads());
         return roadService.updateRoad(id, toUpdate);
     }
 
@@ -47,5 +50,11 @@ public class RoadController {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteAllRoads(){
         roadService.deleteAllRoads();
+    }
+
+    @DeleteMapping(RoadRoutes.DELETE + "/{id}")
+    public void deleteById(@PathVariable Long id) throws Exception{
+        messagingTemplate.convertAndSend("/topic/roads", roadService.getAllRoads());
+        roadService.deleteById(id);
     }
 }

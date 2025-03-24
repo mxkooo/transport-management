@@ -4,6 +4,7 @@ package com.mxkoo.transport_management.Truck;
 import com.mxkoo.transport_management.Coordinates.Coordinates;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,9 +15,10 @@ import java.util.List;
 @AllArgsConstructor
 public class TruckController {
     private TruckService truckService;
-
+    private final SimpMessagingTemplate messagingTemplate;
     @PostMapping(TruckRoutes.POST)
     public TruckDTO createTruck(@RequestBody @Validated TruckDTO truckDTO){
+        messagingTemplate.convertAndSend("/topic/trucks", truckService.getAllTrucks());
         return truckService.createTruck(truckDTO);
     }
 
@@ -33,6 +35,7 @@ public class TruckController {
     @DeleteMapping(TruckRoutes.DELETE + "/{id}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteTruck(@PathVariable Long id) throws Exception{
+        messagingTemplate.convertAndSend("/topic/trucks", truckService.getAllTrucks());
         truckService.deleteById(id);
     }
 
@@ -44,6 +47,7 @@ public class TruckController {
 
     @PatchMapping(TruckRoutes.UPDATE + "/{id}")
     public TruckDTO updateTruck(@PathVariable Long id, @RequestBody TruckDTO truckDTO) throws Exception {
+        messagingTemplate.convertAndSend("/topic/trucks", truckService.getAllTrucks());
         return truckService.updateTruck(id,truckDTO);
     }
 

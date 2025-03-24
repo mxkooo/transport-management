@@ -3,190 +3,310 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://kit.fontawesome.com/7e5c972fe1.js" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <title>Mapa</title>
     <style>
-        body {
-          display: flex;
-          margin: 0;
-          height: 100vh;
-          overflow: hidden;
-        }
+        /* Globalne style */
+     body {
+       display: flex;
+       margin: 0;
+       height: 100vh;
+       overflow: hidden;
+     }
 
-        #map {
-          flex: 1;
-          height: 100%;
-          margin: 0;
-        }
+     #map {
+       flex: 1;
+       height: 100%;
+       margin: 0;
+     }
 
-        #sidebar-driver,
-        #sidebar-truck,
-        #sidebar-road {
-          position: fixed;
-          right: -300px;
-          top: 0;
-          height: 100%;
-          width: 300px;
-          background-color: #f9f9f9;
-          border-left: 1px solid #ddd;
-          overflow-y: auto;
-          padding: 15px;
-          box-sizing: border-box;
-          transition: right 0.3s ease;
-          z-index: 1000;
-        }
+     /* Style dla sidebarów */
+     #sidebar-driver,
+     #sidebar-truck,
+     #sidebar-road {
+       position: fixed;
+       right: -300px;
+       top: 0;
+       height: 100%;
+       width: 600px;
+       background-color: #f9f9f9;
+       border-left: 1px solid #ddd;
+       overflow-y: auto;
+       padding: 15px;
+       box-sizing: border-box;
+       transition: right 0.3s ease;
+       z-index: 100;
+     }
 
-        #sidebar-truck.open,
-        #sidebar-driver.open,
-        #sidebar-road.open {
-          right: 0;
-        }
+     #sidebar-driver.open,
+     #sidebar-truck.open,
+     #sidebar-road.open {
+       right: 0;
+       z-index: 2200;
+     }
 
-        #sidebar-driver h2,
-        #sidebar-truck h2,
-        #sidebar-road h2 {
-          font-size: 18px;
-          margin-bottom: 10px;
-        }
+     #sidebar-driver h2,
+     #sidebar-truck h2,
+     #sidebar-road h2 {
+       font-size: 18px;
+       margin-bottom: 10px;
+     }
 
-        .driver,
-        .truck,
-        .road {
-          border: 1px solid #ddd;
-          border-radius: 5px;
-          padding: 10px;
-          margin-bottom: 10px;
-          background-color: #fff;
-        }
+     /* Style dla elementów listy */
+     .driver,
+     .truck,
+     .road {
+       border: 1px solid #ddd;
+       border-radius: 5px;
+       padding: 10px;
+       margin-bottom: 10px;
+       background-color: #fff;
+       transition: transform 0.5s ease
+     }
 
-        .driver h3 {
-          margin: 0 0 5px;
-          font-size: 16px;
-        }
+     .driver h3 {
+       margin: 0 0 5px;
+       font-size: 16px;
+     }
 
-        .driver p {
-          margin: 5px 0;
-          font-size: 14px;
-        }
+     .driver p {
+       margin: 5px 0;
+       font-size: 14px;
+     }
+     .driver:hover,
+     .truck:hover,
+     .road:hover{
+        cursor:pointer;
+        box-shadow: 9px 3px 48px 30px rgba(43, 124, 169, 1);
+        transform: scale(1.05);
+     }
 
-        #toggle-sidebar-driver-btn  {
-          position: fixed;
-          right: 10px;
-          top: 10px;
-          background-color: #007bff;
-          color: #fff;
-          border: none;
-          border-radius: 50%;
-          width: 50px;
-          height: 50px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 1001;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+     /* Style dla przycisków otwierających sidebary */
+     #toggle-sidebar-driver-btn,
+     #toggle-sidebar-truck-btn,
+     #toggle-sidebar-road-btn {
+       position: fixed;
+       right: 10px;
+       background-color: #007bff;
+       color: #fff;
+       border: none;
+       border-radius: 50%;
+       width: 50px;
+       height: 50px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       cursor: pointer;
+       z-index: 1001;
+       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+     }
 
-        #toggle-sidebar-truck-btn {
-          position: fixed;
-          right: 10px;
-          top: 100px;
-          background-color: #007bff;
-          color: #fff;
-          border: none;
-          border-radius: 50%;
-          width: 50px;
-          height: 50px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 1001;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        #toggle-sidebar-road-btn {
-          position: fixed;
-          right: 10px;
-          top: 200px;
-          background-color: #007bff;
-          color: #fff;
-          border: none;
-          border-radius: 50%;
-          width: 50px;
-          height: 50px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 1001;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+     #toggle-sidebar-driver-btn {
+       top: 10px;
+     }
 
-        #toggle-sidebar-driver-btn i,
-        #toggle-sidebar-truck-btn i {
-          font-size: 24px;
-        }
+     #toggle-sidebar-truck-btn {
+       top: 100px;
+     }
 
-        #create-driver-form,
-        #create-truck-form,
-        #create-road-form{
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: white;
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          z-index: 1002;
-          display: none;
-        }
+     #toggle-sidebar-road-btn {
+       top: 200px;
+     }
 
-        #create-driver-form input,
-        #create-truck-form input,
-        #create-road-form input {
-          display: block;
-          width: 100%;
-          margin-bottom: 10px;
-          padding: 8px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          box-sizing: border-box;
-        }
+     /* Style dla formularzy */
+     #create-driver-form,
+     #create-truck-form,
+     #create-road-form,
+     .form-container {
+       position: fixed;
+       top: 50%;
+       left: 50%;
+       transform: translate(-50%, -50%);
+       background: white;
+       padding: 20px;
+       border-radius: 8px;
+       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+       z-index: 1002;
+       display: none;
+       width: 300px;
+       text-align: center;
+     }
 
-        #create-driver-form button,
-        #create-truck-form button,
-        #create-road-form button {
-          background-color: #007bff;
-          color: white;
-          border: none;
-          padding: 10px 15px;
-          border-radius: 4px;
-          cursor: pointer;
-        }
+     #create-driver-form input,
+     #create-truck-form input,
+     #create-road-form input,
+     .form-container input {
+       width: 90%;
+       padding: 8px;
+       margin: 10px 0;
+       border: 1px solid #ccc;
+       border-radius: 5px;
+     }
 
-        #create-driver-form button.close,
-        #create-truck-form button.close,
-        #create-road-form button.close {
-          background-color: #ddd;
-          color: black;
-          float: right;
-        }
+     #create-driver-form button,
+     #create-truck-form button,
+     #create-road-form button,
+     .btn-submit,
+     .btn-close {
+       background-color: #007bff;
+       color: white;
+       border: none;
+       padding: 10px 15px;
+       border-radius: 4px;
+       cursor: pointer;
+     }
+
+     .btn-close {
+       background: red;
+       position: absolute;
+       top: 10px;
+       right: 10px;
+     }
+
+     .btn-submit {
+       background: #d9534f;
+       width: 100%;
+     }
+
+     .btn-submit:hover {
+       background: #c9302c;
+     }
+     #user-panel,
+     #truck-panel,
+     #road-panel{
+       position: fixed;
+       top: 0;
+       right: -1700px;
+       width: 500px;
+       height: 100%;
+       background: white;
+       box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+       transition: right 0.3s ease-in-out;
+       z-index: 1002;
+       padding: 20px;
+       display: flex;
+       flex-direction: column;
+       gap: 10px;
+     }
+
+     #close-user-panel,
+     #close-truck-panel,
+     #close-road-panel{
+       background: red;
+       color: white;
+       border: none;
+       padding: 10px;
+       cursor: pointer;
+       align-self: flex-end;
+     }
+
+     .panel-section {
+       padding: 15px;
+       background: #f1f1f1;
+       cursor: pointer;
+       border-radius: 5px;
+       text-align: center;
+       font-weight: bold;
+     }
+
+     .panel-section:hover {
+       background: #ddd;
+     }
+
+     .modal-overlay {
+       display: none;
+       position: fixed;
+       z-index: 1000;
+       left: 0;
+       top: 0;
+       width: 100%;
+       height: 100%;
+       background-color: rgba(0, 0, 0, 0.5);
+     }
+
+     .modal-box {
+       background: #fff;
+       margin: 10% auto;
+       padding: 20px;
+       width: 320px;
+       border-radius: 8px;
+       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+       text-align: center;
+     }
+    #close-driver-list,
+    #close-truck-list,
+    #close-road-list{
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: red;
+        color: white;
+        border: none;
+        font-size: 20px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    #create-driver-form button.close,
+    #create-truck-form button.close,
+    #create-road-form button.close {
+      background-color: #ddd;
+      color: black;
+      float: right;
+    }
+     .modal-close {
+       float: right;
+       font-size: 24px;
+       cursor: pointer;
+     }
+
+     .modal-box input {
+       width: 100%;
+       padding: 8px;
+       margin: 5px 0;
+       border: 1px solid #ccc;
+       border-radius: 4px;
+     }
+
+     .update-driver-button,
+     .update-truck-button,
+     .update-road-button{
+       padding: 10px;
+       margin-top: 10px;
+       background-color: #007bff;
+       color: white;
+       border: none;
+       cursor: pointer;
+       width: 100%;
+       border-radius: 4px;
+     }
+
+     .update-driver-button:hover,
+     .update-truck-button:hover,
+     .update-road-button:hover {
+       background-color: #0056b3;
+     }
     </style>
 </head>
 <body>
 <div id="map"></div>
 <div id="sidebar-driver">
+    <button id="close-driver-list" class="close-btn">&times;</button>
     <h2>Lista kierowców</h2>
     <div id="driver-list"></div>
 </div>
 <div id="sidebar-truck">
+    <button id="close-truck-list" class="close-btn">&times;</button>
     <h2>Lista pojazdów</h2>
     <div id="truck-list"></div>
 </div>
 <div id="sidebar-road">
+    <button id="close-road-list" class="close-btn">&times;</button>
     <h2>Lista tras</h2>
     <div id="road-list"></div>
 </div>
@@ -200,17 +320,6 @@
     <i class="fa-solid fa-road"></i>
 </button>
 
-<button id="open-create-driver-form" style="position: fixed; left: 10px; top: 10px; background-color: #28a745; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    <i class="fa-solid fa-user">  + </i>
-</button>
-
-<button id="open-create-truck-form" style="position: fixed; left: 10px; top: 100px; background-color: #28a745; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    <i class="fa-solid fa-truck">  + </i>
-</button>
-<button id="open-create-road-form" style="position: fixed; left: 10px; top: 200px; background-color: #28a745; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    <i class="fa-solid fa-road">  + </i>
-</button>
-<!-- Formularz do tworzenia kierowcy -->
 <div id="create-driver-form">
     <button class="close" id="close-create-driver-form">&times;</button>
     <h2>Dodaj kierowcę</h2>
@@ -221,6 +330,64 @@
     <button id="submit-driver">Dodaj</button>
 </div>
 
+<button id="user-panel-btn" style="position: fixed; right: 10px; top: 10px; background-color: #007bff; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1001;">
+    <i class="fa-solid fa-user"></i>
+</button>
+
+<div id="user-panel">
+    <button id="close-user-panel">&times;</button>
+    <div class="panel-section" id="get-drivers">📋 Pobierz kierowców</div>
+    <div class="panel-section" id="add-driver">➕ Dodaj kierowcę</div>
+    <div class="panel-section" id="modify-driver">✏️ Modyfikuj kierowcę</div>
+    <div class="panel-section" id="delete-driver">🗑 Usuń kierowcę</div>
+</div>
+
+<div id="delete-driver-form" class="form-container">
+    <h2>Usuń kierowcę</h2>
+    <label for="delete-driver-id">ID kierowcy:</label>
+    <input type="number" id="delete-driver-id" placeholder="Wpisz ID kierowcy" min="1" required>
+    <button id="submit-delete-driver" class="btn-submit">Usuń</button>
+    <button id="close-delete-driver-form" class="btn-close">X</button>
+</div>
+
+<div id="update-driver-modal" class="modal-overlay">
+    <div class="modal-box">
+        <span id="close-update-driver-modal" class="modal-close">&times;</span>
+        <h2>Edytuj Dane Kierowcy</h2>
+
+        <label for="update-driver-id">ID Kierowcy:</label>
+        <input type="number" id="update-driver-id" placeholder="Wprowadź ID" min="1" required>
+
+        <label for="update-driver-name">Imię:</label>
+        <input type="text" id="update-driver-name" placeholder="Nowe imię">
+
+        <label for="update-driver-lastname">Nazwisko:</label>
+        <input type="text" id="update-driver-lastname" placeholder="Nowe nazwisko">
+
+        <label for="update-driver-phone">Numer telefonu:</label>
+        <input type="text" id="update-driver-phone" placeholder="Nowy numer telefonu">
+
+        <label for="update-driver-email">Email:</label>
+        <input type="email" id="update-driver-email" placeholder="Nowy email">
+
+        <button class="update-driver-button" id="submit-update-driver-form">Zapisz zmiany</button>
+    </div>
+</div>
+
+<div id="truck-panel">
+    <button id="close-truck-panel">&times;</button>
+    <div class="panel-section" id="get-trucks">📋 Pobierz pojazdy</div>
+    <div class="panel-section" id="add-truck">➕ Dodaj pojazd</div>
+    <div class="panel-section" id="modify-truck">✏️ Modyfikuj pojazd</div>
+    <div class="panel-section" id="delete-truck">🗑 Usuń pojazd</div>
+</div>
+<div id="delete-truck-form" class="form-container">
+    <h2>Usuń pojazd</h2>
+    <label for="delete-truck-id">ID pojazdu:</label>
+    <input type="number" id="delete-truck-id" placeholder="Wpisz ID pojazdu" min="1" required>
+    <button id="submit-delete-truck" class="btn-submit">Usuń</button>
+    <button id="close-delete-truck-form" class="btn-close">X</button>
+</div>
 <div id="create-truck-form">
     <button class="close" id="close-create-truck-form">&times;</button>
     <h2>Dodaj pojazd</h2>
@@ -229,10 +396,35 @@
     <input type="date" id="inspectionDate" placeholder="Data przeglądu" />
     <button id="submit-truck">Dodaj</button>
 </div>
+<div id="update-truck-modal" class="modal-overlay">
+    <div class="modal-box">
+        <span id="close-update-truck-modal" class="modal-close">&times;</span>
+        <h2>Edytuj Dane pojazdu</h2>
 
+        <label for="update-truck-id">ID pojazdu:</label>
+        <input type="number" id="update-truck-id" placeholder="Wprowadź ID" min="1" required>
+
+        <label for="update-truck-license-plate">tablica rejestracyjna:</label>
+        <input type="text" id="update-truck-license-plate" placeholder="Nowa tablica rejestracyjna">
+
+        <label for="update-truck-capacity">Pojemność:</label>
+        <input type="text" id="update-truck-capacity" placeholder="Nowa pojemność">
+
+        <label for="update-truck-inspection-date">Data przeglądu:</label>
+        <input type="date" id="update-truck-inspection-date" placeholder="Nowa data przeglądu">
+        <button class="update-truck-button" id="submit-update-truck-form">Zapisz zmiany</button>
+    </div>
+</div>
+<div id="road-panel">
+    <button id="close-road-panel">&times;</button>
+    <div class="panel-section" id="get-roads">📋 Pobierz trasy</div>
+    <div class="panel-section" id="add-road">➕ Dodaj trasę</div>
+    <div class="panel-section" id="modify-road">✏️ Modyfikuj trasę</div>
+    <div class="panel-section" id="delete-road">🗑 Usuń trasę</div>
+</div>
 <div id="create-road-form">
     <button class="close" id="close-create-road-form">&times;</button>
-    <h2>Dodaj trase</h2>
+    <h2>Dodaj trasę</h2>
     <input type="text" id="from" placeholder="Z" />
     <input type="text" id="via" placeholder="Przez" />
     <input type="text" id="to" placeholder="Do" />
@@ -241,16 +433,43 @@
     <input type="date" id="arrivalDate" placeholder="Koniec" />
     <button id="submit-road">Dodaj</button>
 </div>
-<script>
+<div id="update-road-modal" class="modal-overlay">
+    <div class="modal-box">
+        <span id="close-update-road-modal" class="modal-close">&times;</span>
+        <h2>Edytuj Dane Trasy</h2>
 
+        <label for="update-road-id">ID trasy:</label>
+        <input type="number" id="update-road-id" placeholder="Wprowadź ID" min="1" required>
+
+        <label for="update-road-from">Z:</label>
+        <input type="text" id="update-road-from" placeholder="Nowy punkt startu">
+
+        <label for="update-road-via">Przez:</label>
+        <input type="text" id="update-road-via" placeholder="Nowe miejscowości pośrednie">
+
+        <label for="update-road-to">Do:</label>
+        <input type="text" id="update-road-to" placeholder="Nowy cel trasy">
+        <button class="update-driver-button" id="submit-update-road-form">Zapisz zmiany</button>
+    </div>
+</div>
+<div id="delete-road-form" class="form-container">
+    <h2>Usuń trasę</h2>
+    <label for="delete-road-id">ID trasy:</label>
+    <input type="number" id="delete-road-id" placeholder="Wpisz ID trasy" min="1" required>
+    <button id="submit-delete-road" class="btn-submit">Usuń</button>
+    <button id="close-delete-road-form" class="btn-close">X</button>
+</div>
+<script>
     const map = L.map('map').setView([54, 21.8], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
+
     const handleError = (error, type) => {
       console.error(`Błąd podczas pobierania danych dla ${type}:`, error);
       alert(`Nie udało się załadować danych dla ${type}.`);
     };
+
     const driverIcon = L.divIcon({
       className: 'icon-large-driver',
       iconSize: [50, 50],
@@ -258,12 +477,13 @@
       popupAnchor: [0, -32],
       html: '<i class="fa-solid fa-user"></i>'
     });
+
     const truckIcon = L.divIcon({
       className: 'icon-large-truck',
       iconSize: [32, 32],
       iconAnchor: [16, 32],
       popupAnchor: [0, -32],
-      html: ' <i class="fa-solid fa-truck"></i>'
+      html: '<i class="fa-solid fa-truck"></i>'
     });
 
     const sidebarDriver = document.getElementById('sidebar-driver');
@@ -280,48 +500,80 @@
     let trucksLoaded = false;
     let roadsLoaded = false;
 
+    const closeDriverListBtn = document.getElementById("close-driver-list");
+    const getDriversBtn = document.getElementById("get-drivers");
+    const userPanel = document.getElementById("user-panel");
+    const userPanelBtn = document.getElementById("user-panel-btn");
+    const closeUserPanel = document.getElementById("close-user-panel");
+    const createDriverForm = document.getElementById("create-driver-form");
+    const addDriverPanelBtn = document.getElementById("add-driver");
+    const closeCreateDriverFormBtn = document.getElementById("close-create-driver-form");
+    const submitDriverButton = document.getElementById("submit-driver");
+    const deleteDriverForm = document.getElementById("delete-driver-form");
+    const deleteDriverPanelBtn = document.getElementById("delete-driver");
+    const closeDeleteDriverFormBtn = document.getElementById("close-delete-driver-form");
+    const submitDeleteDriverButton = document.getElementById("submit-delete-driver");
+    const openUpdateDriverPanelBtn = document.getElementById("modify-driver");
+    const updateDriverModal = document.getElementById("update-driver-modal");
+    const closeUpdateDriverModalBtn = document.getElementById("close-update-driver-modal");
+    const submitUpdateDriverBtn = document.getElementById("submit-update-driver-form");
 
-    const createDriverForm = document.getElementById('create-driver-form');
-    const closeCreateDriverForm = document.getElementById('close-create-driver-form');
-    const submitDriverButton = document.getElementById('submit-driver');
-    const openCreateDriverFormButton = document.getElementById('open-create-driver-form');
+    const closeTruckListBtn = document.getElementById("close-truck-list");
+    const getTrucksBtn = document.getElementById("get-trucks");
+    const truckPanel = document.getElementById("truck-panel");
+    const closeTruckPanel = document.getElementById("close-truck-panel");
+    const createTruckForm = document.getElementById("create-truck-form");
+    const addTruckPanelBtn = document.getElementById("add-truck");
+    const closeCreateTruckFormBtn = document.getElementById("close-create-truck-form");
+    const submitTruckButton = document.getElementById("submit-truck");
+    const deleteTruckForm = document.getElementById("delete-truck-form");
+    const deleteTruckPanelBtn = document.getElementById("delete-truck");
+    const closeDeleteTruckFormBtn = document.getElementById("close-delete-truck-form");
+    const submitDeleteTruckButton = document.getElementById("submit-delete-truck");
+    const openUpdateTruckPanelBtn = document.getElementById("modify-truck");
+    const updateTruckModal = document.getElementById("update-truck-modal");
+    const closeUpdateTruckModalBtn = document.getElementById("close-update-truck-modal");
+    const submitUpdateTruckBtn = document.getElementById("submit-update-truck-form");
 
-    const createTruckForm = document.getElementById('create-truck-form');
-    const closeCreateTruckForm = document.getElementById('close-create-truck-form');
-    const submitTruckButton = document.getElementById('submit-truck');
-    const openCreateTruckFormButton = document.getElementById('open-create-truck-form');
-
-    const createRoadForm = document.getElementById('create-road-form');
-    const closeCreateRoadForm = document.getElementById('close-create-road-form');
-    const submitRoadButton = document.getElementById('submit-road');
-    const openCreateRoadFormButton = document.getElementById('open-create-road-form');
+    const closeRoadListBtn = document.getElementById("close-road-list");
+    const getRoadsBtn = document.getElementById("get-roads");
+    const roadPanel = document.getElementById("road-panel");
+    const roadPanelBtn = document.getElementById("road-panel-btn");
+    const closeRoadPanel = document.getElementById("close-road-panel");
+    const createRoadForm = document.getElementById("create-road-form");
+    const addRoadPanelBtn = document.getElementById("add-road");
+    const closeCreateRoadFormBtn = document.getElementById("close-create-road-form");
+    const submitRoadButton = document.getElementById("submit-road");
+    const deleteRoadForm = document.getElementById("delete-road-form");
+    const deleteRoadPanelBtn = document.getElementById("delete-road");
+    const closeDeleteRoadFormBtn = document.getElementById("close-delete-road-form");
+    const submitDeleteRoadButton = document.getElementById("submit-delete-road");
+    const openUpdateRoadPanelBtn = document.getElementById("modify-road");
+    const updateRoadModal = document.getElementById("update-road-modal");
+    const closeUpdateRoadModalBtn = document.getElementById("close-update-road-modal");
+    const submitUpdateRoadBtn = document.getElementById("submit-update-road-form");
 
     const today = new Date().toISOString().split("T")[0];
-
     document.getElementById("inspectionDate").setAttribute("min", today);
     document.getElementById("departureDate").setAttribute("min", today);
     document.getElementById("arrivalDate").setAttribute("min", today);
 
+async function reverseGeocodeWithDepartaments(x, y) {
 
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${x}&lon=${y}`);
+    const data = await response.json();
 
-    openCreateDriverFormButton.addEventListener('click', () => {
-        createDriverForm.style.display = 'block';
-    });
-    closeCreateDriverForm.addEventListener('click', () => {
-        createDriverForm.style.display = 'none';
-    });
-     openCreateTruckFormButton.addEventListener('click', () => {
-        createTruckForm.style.display = 'block';
-    });
-    closeCreateTruckForm.addEventListener('click', () => {
-        createTruckForm.style.display = 'none';
-    });
-     openCreateRoadFormButton.addEventListener('click', () => {
-        createRoadForm.style.display = 'block';
-    });
-    closeCreateRoadForm.addEventListener('click', () => {
-        createRoadForm.style.display = 'none';
-    });
+    const city = data.address.city || data.address.town || data.address.village || "Nieznane";
+    const region = data.address.state || "Nieznane";
+
+    return { city, region };
+  } catch (error) {
+    console.error("Błąd geokodowania:", error);
+    return { city: "Nieznane", region: "Nieznane" };
+  }
+}
+
 
     async function reverseGeocode(lat, lon) {
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
@@ -343,192 +595,516 @@
       }
     }
 
-    toggleSidebarDriverBtn.addEventListener('click', () => {
-      toggleSidebar(sidebarDriver, driversLoaded, '/location/drivers', drivers => {
-        driverListContainer.innerHTML = drivers.map(driver => `
+    openUpdateDriverPanelBtn.addEventListener("click", () => updateDriverModal.style.display = "block");
+    closeUpdateDriverModalBtn.addEventListener("click", () => updateDriverModal.style.display = "none");
+    deleteDriverPanelBtn.addEventListener("click", () => deleteDriverForm.style.display = "block");
+    closeDeleteDriverFormBtn.addEventListener("click", () => deleteDriverForm.style.display = "none");
+    closeDriverListBtn.addEventListener("click", () => sidebarDriver.classList.remove("open"));
+    addDriverPanelBtn.addEventListener("click", () => createDriverForm.style.display = "block");
+    closeCreateDriverFormBtn.addEventListener("click", () => createDriverForm.style.display = "none");
+    userPanelBtn.addEventListener("click", () => userPanel.style.right = "0");
+    closeUserPanel.addEventListener("click", () => userPanel.style.right = "-1700px");
 
-          <div class="driver">
-              <h3>${driver.name} ${driver.lastName}</h3>
-              <p>
-                  <strong>Telefon:</strong> ${driver.contactNumber}
-              </p>
-              <p>
-                  <strong>Status:</strong> ${driver.driverStatus}
-              </p>
-          </div>
-                `).join('');
-      });
+    openUpdateTruckPanelBtn.addEventListener("click", () => updateTruckModal.style.display = "block");
+    closeUpdateTruckModalBtn.addEventListener("click", () => updateTruckModal.style.display = "none");
+    deleteTruckPanelBtn.addEventListener("click", () => deleteTruckForm.style.display = "block");
+    closeDeleteTruckFormBtn.addEventListener("click", () => deleteTruckForm.style.display = "none");
+    toggleSidebarTruckBtn.addEventListener("click", () => truckPanel.style.right = "0");
+    closeTruckPanel.addEventListener("click", () => truckPanel.style.right = "-1700px");
+    closeTruckListBtn.addEventListener("click", () => sidebarTruck.classList.remove("open"));
+    addTruckPanelBtn.addEventListener("click", () => createTruckForm.style.display = "block");
+    closeCreateTruckFormBtn.addEventListener("click", () => createTruckForm.style.display = "none");
+
+    openUpdateRoadPanelBtn.addEventListener("click", () => updateRoadModal.style.display = "block");
+    closeUpdateRoadModalBtn.addEventListener("click", () => updateRoadModal.style.display = "none");
+    deleteRoadPanelBtn.addEventListener("click", () => deleteRoadForm.style.display = "block");
+    closeDeleteRoadFormBtn.addEventListener("click", () => deleteRoadForm.style.display = "none");
+    toggleSidebarRoadBtn.addEventListener("click", () => roadPanel.style.right = "0");
+    toggleSidebarRoadBtn.addEventListener("click", () => roadPanel.style.right = "0");
+    closeRoadPanel.addEventListener("click", () => roadPanel.style.right = "-1700px");
+    closeRoadListBtn.addEventListener("click", () => sidebarRoad.classList.remove("open"));
+    addRoadPanelBtn.addEventListener("click", () => createRoadForm.style.display = "block");
+    closeCreateRoadFormBtn.addEventListener("click", () => createRoadForm.style.display = "none");
+
+    const socket = new SockJS('/ws');
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function () {
+        console.log("Połączono z WebSocket");
+
+        stompClient.subscribe('/topic/drivers', function (message) {
+            const drivers = JSON.parse(message.body);
+            updateDriverList(drivers);
+        });
+        stompClient.subscribe('/topic/trucks', function (message) {
+            const trucks = JSON.parse(message.body);
+            updateTruckList(trucks);
+        });
+        stompClient.subscribe('/topic/roads', function (message) {
+            const roads = JSON.parse(message.body);
+            updateRoadList(roads);
+        });
     });
 
-  toggleSidebarTruckBtn.addEventListener('click', () => {
-  toggleSidebar(sidebarTruck, trucksLoaded, '/location/trucks', async trucks => {
-    const truckDataWithPlaces = await Promise.all(trucks.map(async truck => {
-      const place = await reverseGeocode(truck.coordinates.x, truck.coordinates.y);
-      return { ...truck, place };
-    }));
+function updateDriverList(drivers) {
+    const driverListContainer = document.getElementById('driver-list');
+    driverListContainer.innerHTML = drivers.map(driver => `
+        <div class="driver" id="driver-${driver.id}" data-id="${driver.id}">
+            <h3>${driver.name} ${driver.lastName}</h3>
+            <p>Telefon: ${driver.contactNumber}</p>
+            <p><strong>ID:</strong> ${driver.id}</p>
+            <p><strong>Status:</strong> ${driver.driverStatus}</p>
+            <p><strong>Miejsce:</strong> <span id="place-${driver.id}">Ładowanie...</span></p>
+        </div>
+    `).join('');
+}
+function updateTruckList(trucks) {
+    const truckListContainer = document.getElementById('truck-list');
+    truckListContainer.innerHTML = trucks.map(truck => `
+        <div class="truck" id="truck-${truck.id}" data-id="${truck.id}">
+            <h3>${truck.licensePlate}</h3>
+            <p><strong>ID:</strong> ${truck.id}</p>
+            <p><strong>Status:</strong> ${truck.truckStatus}</p>
+            <p><strong>Miejsce:</strong> <span id="place-${truck.id}">Ładowanie...</span></p>
+        </div>
+    `).join('');
+}
+function updateRoadList(roads) {
+    const roadListContainer = document.getElementById('road-list');
+    roadListContainer.innerHTML = roads.map(road => `
+      <div class="road" id="road-${road.id}" data-id="${road.id}">
+        <h3>Z: ${road.from} Do: ${road.to}</h3>
+        <p><strong>Przez:</strong> ${road.via}</p>
+        <p><strong>Początek:</strong> ${road.departureDate.toLocaleString()}</p>
+        <p><strong>Koniec:</strong> ${road.arrivalDate ? new Date(road.arrivalDate).toLocaleString() : "Nieznane"}</p>
+        <p><strong>Status:</strong> ${road.roadStatus}</p>
+      </div>
+    `).join('');
+}
 
-    truckListContainer.innerHTML = truckDataWithPlaces.map(truck => `
-      <div class="truck">
-          <h3>${truck.licensePlate}</h3>
-          <p><strong>ID:</strong> ${truck.id}</p>
-          <p><strong>Status:</strong> ${truck.truckStatus}</p>
-          <p><strong>Miejsce:</strong> ${truck.place}</p>
-      </div>`).join('');
-  });
+
+    submitUpdateDriverBtn.addEventListener('click', () => {
+      const id = document.getElementById('update-driver-id').value;
+      const name = document.getElementById('update-driver-name').value.trim();
+      const lastName = document.getElementById('update-driver-lastname').value.trim();
+      const phone = document.getElementById('update-driver-phone').value.trim();
+      const email = document.getElementById('update-driver-email').value.trim();
+
+      if (!id || id < 1) {
+        alert("Podaj poprawne ID kierowcy!");
+        return;
+      }
+
+      const updatedDriver = {};
+      if (name) updatedDriver.name = name;
+      if (lastName) updatedDriver.lastName = lastName;
+      if (phone) updatedDriver.contactNumber = phone;
+      if (email) updatedDriver.email = email;
+
+      fetch(`/drivers/update/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedDriver),
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Błąd podczas aktualizacji kierowcy');
+        return response.json();
+      })
+      .then(data => {
+        alert(`Zaktualizowano kierowcę o ID: ${id}`);
+        updateDriverModal.style.display = 'none';
+        document.getElementById('update-driver-id').value = "";
+        document.getElementById('update-driver-name').value = "";
+        document.getElementById('update-driver-lastname').value = "";
+        document.getElementById('update-driver-phone').value = "";
+        document.getElementById('update-driver-email').value = "";
+      })
+      .catch(error => alert(`Błąd: ${error.message}`));
+    });
+
+submitUpdateRoadBtn.addEventListener('click', () => {
+      const id = document.getElementById('update-road-id').value;
+      const from = document.getElementById('update-road-from').value.trim();
+      const via = document.getElementById('update-road-via').value.trim();
+      const to = document.getElementById('update-road-to').value.trim();
+
+      if (!id || id < 1) {
+        alert("Podaj poprawne ID trasy!");
+        return;
+      }
+
+      const updatedRoad = {};
+      if (from) updatedRoad.from = from;
+      if (via) updatedRoad.via = via;
+      if (to) updatedRoad.to = to;
+
+      fetch(`/roads/update/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedRoad),
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Błąd podczas aktualizacji trasy');
+        return response.json();
+      })
+      .then(data => {
+        alert(`Zaktualizowano trase o ID: ${id}`);
+        updateRoadModal.style.display = 'none';
+        document.getElementById('update-road-id').value = "";
+        document.getElementById('update-road-from').value = "";
+        document.getElementById('update-road-via').value = "";
+        document.getElementById('update-road-to').value = "";
+      })
+      .catch(error => alert(`Błąd: ${error.message}`));
+    });
+
+    submitUpdateTruckBtn.addEventListener('click', () => {
+      const id = document.getElementById('update-truck-id').value;
+      const licensePlate = document.getElementById('update-truck-license-plate').value.trim();
+      const capacity = document.getElementById('update-truck-capacity').value.trim();
+      const inspectionDate = document.getElementById('update-truck-inspection-date').value.trim();
+
+      if (!id || id < 1) {
+        alert("Podaj poprawne ID pojazdu!");
+        return;
+      }
+
+      const updatedTruck = {};
+      if (licensePlate) updatedTruck.licensePlate = licensePlate;
+      if (capacity) updatedTruck.capacity = capacity;
+      if (inspectionDate) updatedTruck.inspectionDate = inspectionDate;
+
+      fetch(`/trucks/update/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTruck),
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Błąd podczas aktualizacji pojazdu');
+        return response.json();
+      })
+      .then(data => {
+        alert(`Zaktualizowano pojazd o ID: ${id}`);
+        updateTruckModal.style.display = 'none';
+        document.getElementById('update-truck-id').value = "";
+        document.getElementById('update-truck-license-plate').value = "";
+        document.getElementById('update-truck-capacity').value = "";
+        document.getElementById('update-truck-inspection-date').value = "";
+      })
+      .catch(error => alert(`Błąd: ${error.message}`));
+    });
+const geoCache = new Map();
+
+async function cachedReverseGeocode(x, y) {
+  const key = `${x},${y}`;
+  if (geoCache.has(key)) {
+    return geoCache.get(key);
+  }
+  const place = await reverseGeocode(x, y);
+  geoCache.set(key, place);
+  return place;
+}
+const roadPolylines = {};
+
+
+function addRoadPolyline(roadId, coordinates) {
+  const polyline = L.polyline(coordinates, { color: 'blue' }).addTo(map);
+  roadPolylines[roadId] = polyline;
+}
+const entityConfig = {
+  drivers: {
+    btn: getDriversBtn,
+    sidebar: sidebarDriver,
+    loadedFlag: driversLoaded,
+    url: "/location/drivers",
+    container: driverListContainer,
+    processData: async (drivers) => {
+  driverListContainer.innerHTML = drivers.map(driver => `
+    <div class="driver" id="driver-${driver.id}" data-id="${driver.id}">
+      <h3>${driver.name} ${driver.lastName}</h3>
+      <p>Telefon: ${driver.contactNumber}</p>
+      <p><strong>ID:</strong> ${driver.id}</p>
+      <p><strong>Status:</strong> ${driver.driverStatus}</p>
+      <p><strong>Miejsce:</strong> <span id="place-${driver.id}">Ładowanie...</span></p>
+    </div>
+  `).join('');
+
+
+driverListContainer.addEventListener('mouseover', (event) => {
+  const driverDiv = event.target.closest('.driver');
+  if (!driverDiv) return;
+
+  const driverId = driverDiv.dataset.id;
+  const marker = markers[`driver_${driverId}`];
+
+  if (marker) {
+    marker.openPopup();
+    map.setView(marker.getLatLng(), 7);
+  }
 });
 
-toggleSidebarRoadBtn.addEventListener('click', () => {
-      toggleSidebar(sidebarRoad, roadsLoaded, '/location/roads', roads => {
-        roadListContainer.innerHTML = roads.map(road => `
+  for (const driver of drivers) {
+    if (driver.coordinates) {
+      const { city, region } = await reverseGeocodeWithDepartaments(driver.coordinates.x, driver.coordinates.y);
+      const placeElement = document.getElementById(`place-${driver.id}`);
+      if (placeElement) {
+        placeElement.textContent = `${city}, ${region}`;
+      }
+    }
+  }
 
-          <div class="road">
-              <h3> Z: ${road.from} Do: ${road.to} </h3>
-              <p>
-                  <strong>Przez:</strong> ${road.via}
-              </p>
-              <p>
-                  <strong>Początek:</strong> ${road.departureDate}
-              </p>
-              <p>
-                  <strong>Koniec:</strong> ${road.arrivalDate}
-              </p>
-               <p>
-                  <strong>Status:</strong> ${road.roadStatus}
-              </p>
-          </div>
-                `).join('');
-      });
+  return driverListContainer.innerHTML;
+}
+
+  },
+
+  trucks: {
+    btn: getTrucksBtn,
+    sidebar: sidebarTruck,
+    loadedFlag: trucksLoaded,
+    url: "/location/trucks",
+    container: truckListContainer,
+     processData: async (trucks) => {
+    truckListContainer.innerHTML = trucks.map(truck => `
+    <div class="truck" id="truck-${truck.id}" data-id="${truck.id}">
+      <h3>${truck.licensePlate}</h3>
+      <p><strong>ID:</strong> ${truck.id}</p>
+      <p><strong>Status:</strong> ${truck.truckStatus}</p>
+      <p><strong>Miejsce:</strong> <span id="place-${truck.id}">Ładowanie...</span></p>
+    </div>
+  `).join('');
+
+truckListContainer.addEventListener('click', (event) => {
+  const truckDiv = event.target.closest('.truck');
+  if (!truckDiv) return;
+
+  const truckId = truckDiv.dataset.id;
+  const marker = markers[`truck_${truckId}`];
+
+  if (marker) {
+    marker.openPopup();
+    map.setView(marker.getLatLng(), 8);
+  }
+});
+
+  for (const truck of trucks) {
+    if (truck.coordinates) {
+      const { city, region } = await reverseGeocodeWithDepartaments(truck.coordinates.x, truck.coordinates.y);
+      const placeElement = document.getElementById(`place-${truck.id}`);
+      if (placeElement) {
+        placeElement.textContent = `${city}, ${region}`;
+      }
+    }
+  }
+
+  return truckListContainer.innerHTML;
+}
+  },
+
+  roads: {
+  btn: getRoadsBtn,
+  sidebar: sidebarRoad,
+  loadedFlag: roadsLoaded,
+  url: "/location/roads",
+  container: roadListContainer,
+  processData: (roads) => {
+    roads = roads.filter(road => road.departureDate)
+      .map(road => ({ ...road, departureDate: new Date(road.departureDate) }))
+      .sort((a, b) => b.departureDate - a.departureDate);
+
+    roadListContainer.innerHTML = roads.map(road => `
+      <div class="road" id="road-${road.id}" data-id="${road.id}">
+        <h3>Z: ${road.from} Do: ${road.to}</h3>
+        <p><strong>Przez:</strong> ${road.via}</p>
+        <p><strong>Początek:</strong> ${road.departureDate.toLocaleString()}</p>
+        <p><strong>Koniec:</strong> ${road.arrivalDate ? new Date(road.arrivalDate).toLocaleString() : "Nieznane"}</p>
+        <p><strong>Status:</strong> ${road.roadStatus}</p>
+      </div>
+    `).join('');
+
+    return roadListContainer.innerHTML;
+  }
+}
+};
+
+roadListContainer.addEventListener('mouseover', (event) => {
+    const roadDiv = event.target.closest('.road');
+    if (!roadDiv) return;
+
+    const roadId = roadDiv.dataset.id;
+
+    if (!window.roadPolylines) {
+        console.warn("Brak zapisanych tras.");
+        return;
+    }
+
+    const polyline = window.roadPolylines[roadId];
+    const roadElement = document.getElementById(`road-${roadId}`);
+
+    if (!roadElement) {
+        console.warn(`Nie znaleziono elementu trasy o ID: ${roadId}`);
+        return;
+    }
+
+    const roadStatus = roadElement.querySelector("p:nth-child(5)").textContent.replace("Status: ", "").trim();
+
+    if (roadStatus !== "IN_PROGRESS") {
+        alert(`Nie można wyświetlić trasy. Status: ${roadStatus}`);
+        return;
+    }
+
+    if (polyline) {
+        polyline.openPopup();
+        map.fitBounds(polyline.getBounds());
+    } else {
+        console.warn(`Nie znaleziono trasy o ID: ${roadId}`);
+    }
+});
+
+
+
+
+const setupEntityButton = ({ btn, sidebar, loadedFlag, url, container, processData }) => {
+  btn.addEventListener('click', async () => {
+    toggleSidebar(sidebar, loadedFlag, url, async data => {
+      container.innerHTML = await processData(data);
     });
+  });
+};
+
+
+Object.values(entityConfig).forEach(setupEntityButton);
 
 
     submitDriverButton.addEventListener('click', () => {
-        const name = document.getElementById('driver-name').value;
-        const lastName = document.getElementById('driver-lastName').value;
-        const contactNumber = document.getElementById('driver-number').value;
-        const email = document.getElementById('driver-email').value;
+      const name = document.getElementById('driver-name').value;
+      const lastName = document.getElementById('driver-lastName').value;
+      const contactNumber = document.getElementById('driver-number').value;
+      const email = document.getElementById('driver-email').value;
 
-        if (name && lastName && contactNumber && email) {
-            const driverData = {
-                name: name,
-                lastName: lastName,
-                email: email,
-                contactNumber: contactNumber,
-                    };
-
-            fetch('/drivers/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(driverData),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Wystąpił błąd podczas zapisywania kierowcy');
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert(`Dodano kierowcę: ${data.name} ${data.lastName}`);
-                createDriverForm.style.display = 'none';
-                // Opcjonalnie: odśwież listę kierowców lub wykonaj inną akcję
-            })
-            .catch(error => {
-                alert(`Błąd: ${error.message}`);
-            });
-        } else {
-            alert('Wypełnij wszystkie pola.');
-        }
+      if (name && lastName && contactNumber && email) {
+        const driverData = { name, lastName, email, contactNumber };
+        fetch('/drivers/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(driverData),
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Wystąpił błąd podczas zapisywania kierowcy');
+          return response.json();
+        })
+        .then(data => {
+          alert(`Dodano kierowcę: ${data.name} ${data.lastName}`);
+          createDriverForm.style.display = 'none';
+        })
+        .catch(error => alert(`Błąd: ${error.message}`));
+      } else {
+        alert('Wypełnij wszystkie pola.');
+      }
     });
 
-submitTruckButton.addEventListener('click', () => {
-        const licensePlate = document.getElementById('licensePlate').value;
-        const capacity = document.getElementById('capacity').value;
-        const inspectionDate = document.getElementById('inspectionDate').value;
+    function handleDelete(entity, inputId, formElement) {
+    const id = parseInt(document.getElementById(inputId).value.trim(), 10);
+    if (!id || id < 1) {
+        alert(`Podaj poprawne ID ${entity}!`);
+        return;
+    }
 
-        if (licensePlate && capacity && inspectionDate) {
-            const truckData = {
-                licensePlate: licensePlate,
-                capacity: capacity,
-                inspectionDate: inspectionDate,
-                    };
+    fetch(`/${entity}s/delete/${id}`, { method: 'DELETE' })
+        .then(response => {
+            if (!response.ok) throw new Error(`Wystąpił błąd podczas usuwania ${entity}`);
+            return response.text();
+        })
+        .then(text => text ? JSON.parse(text) : {})
+        .then(() => {
+            alert(`Usunięto ${entity} o ID: ${id}`);
+            formElement.style.display = 'none';
+        })
+        .catch(error => alert(`Błąd: ${error.message}`));
+}
 
-            fetch('/trucks/add', { // Zastąp URL swoim endpointem
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(truckData),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Wystąpił błąd podczas zapisywania pojazdu');
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert(`Dodano pojazd: ${data.licensePlate}`);
-                createTruckForm.style.display = 'none';
-                // Opcjonalnie: odśwież listę kierowców lub wykonaj inną akcję
-            })
-            .catch(error => {
-                alert(`Błąd: ${error.message}`);
-            });
-        } else {
-            alert('Wypełnij wszystkie pola.');
-        }
-    });
-submitRoadButton.addEventListener('click', () => {
-        const from = document.getElementById('from').value;
-        let via = document.getElementById('via').value;
-        const to = document.getElementById('to').value;
-        const roadCapacity = document.getElementById('roadCapacity').value;
-        const departureDate = document.getElementById('departureDate').value;
-        const arrivalDate = document.getElementById('arrivalDate').value;
 
-        via = via.split(",").map(v => v.trim()).filter(v => v);
+submitDeleteDriverButton.addEventListener('click', () => handleDelete("driver", "delete-driver-id", deleteDriverForm));
+submitDeleteRoadButton.addEventListener('click', () => handleDelete("road", "delete-road-id", deleteRoadForm));
+submitDeleteTruckButton.addEventListener('click', () => handleDelete("truck", "delete-truck-id", deleteTruckForm));
 
-        if (from && via && to && departureDate && arrivalDate && roadCapacity) {
-            const roadData = {
-                from: from,
-                via: via,
-                to: to,
-                departureDate: departureDate,
-                arrivalDate: arrivalDate,
-                roadCapacity: roadCapacity,
-                    };
 
-            fetch(`/roads/add?capacity=${roadCapacity}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(roadData),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Wystąpił błąd podczas zapisywania trasy');
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert(`Dodano trase: ${data.from} - ${data.to}`);
-                createRoadForm.style.display = 'none';
-                // Opcjonalnie: odśwież listę kierowców lub wykonaj inną akcję
-            })
-            .catch(error => {
-                alert(`Błąd: ${error.message}`);
-            });
-        } else {
-            alert('Wypełnij wszystkie pola.');
-        }
+    submitTruckButton.addEventListener('click', () => {
+      const licensePlate = document.getElementById('licensePlate').value;
+      const capacity = document.getElementById('capacity').value;
+      const inspectionDate = document.getElementById('inspectionDate').value;
+
+      if (licensePlate && capacity && inspectionDate) {
+        const truckData = { licensePlate, capacity, inspectionDate };
+        fetch('/trucks/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(truckData),
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Wystąpił błąd podczas zapisywania pojazdu');
+          return response.json();
+        })
+        .then(data => {
+          alert(`Dodano pojazd: ${data.licensePlate}`);
+          createTruckForm.style.display = 'none';
+        })
+        .catch(error => alert(`Błąd: ${error.message}`));
+      } else {
+        alert('Wypełnij wszystkie pola.');
+      }
     });
 
-let markers = {};
+    submitRoadButton.addEventListener('click', () => {
+            const from = document.getElementById('from').value;
+            let via = document.getElementById('via').value;
+            const to = document.getElementById('to').value;
+            const roadCapacity = document.getElementById('roadCapacity').value;
+            const departureDate = document.getElementById('departureDate').value;
+            const arrivalDate = document.getElementById('arrivalDate').value;
+
+            via = via.split(",").map(v => v.trim()).filter(v => v);
+
+            if (from && via && to && departureDate && arrivalDate && roadCapacity) {
+                const roadData = {
+                    from: from,
+                    via: via,
+                    to: to,
+                    departureDate: departureDate,
+                    arrivalDate: arrivalDate,
+                    roadCapacity: roadCapacity,
+                        };
+
+                fetch(`/roads/add?capacity=${roadCapacity}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(roadData),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Wystąpił błąd podczas zapisywania trasy');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(`Dodano trase: ${data.from} - ${data.to}`);
+                    createRoadForm.style.display = 'none';
+                })
+                .catch(error => {
+                    alert(`Błąd: ${error.message}`);
+                });
+            } else {
+                alert('Wypełnij wszystkie pola.');
+            }
+        });
+
+     let markers = {};
 
 function addMarkers(items, icon, popupTemplate, type) {
   items.forEach(item => {
-    const key = `${type}_${item.id}`; // Unikalny klucz
+    const key = `${type}_${item.id}`;
     if (markers[key]) {
       map.removeLayer(markers[key]);
     }
@@ -561,59 +1137,59 @@ function updateLocations() {
     `, "truck");
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+    updateLocations();
+});
 setInterval(updateLocations, 5000);
 
 
-<!--    fetch('/location/trucks').then(response => response.json()).then(trucks => {-->
-<!--      addMarkers(trucks, truckIcon, truck => `-->
-<!--          <h3>${truck.licensePlate}</h3>-->
-<!--          <p><strong>ID:</strong> ${truck.id}</p>-->
-<!--          <p><strong>Status:</strong> ${truck.truckStatus}</p>`);-->
-<!--    });-->
 
-
-
-    async function geocodeCity(city) {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`);
-      const data = await response.json();
-      if (data.length > 0) {
-        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-      } else {
-        throw new Error(`Nie znaleziono współrzędnych dla miasta: ${city}`);
-      }
-    }
-    async function geocodeCities(cities) {
-      const coordinates = [];
-      for (const city of cities) {
-        try {
-          const coords = await geocodeCity(city);
-          coordinates.push(coords);
-        } catch (error) {
-          console.error(error);
+        async function geocodeCity(city) {
+          const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`);
+          const data = await response.json();
+          if (data.length > 0) {
+            return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+          } else {
+            throw new Error(`Nie znaleziono współrzędnych dla miasta: ${city}`);
+          }
         }
-      }
-      return coordinates;
+        async function geocodeCities(cities) {
+          const coordinates = [];
+          for (const city of cities) {
+            try {
+              const coords = await geocodeCity(city);
+              coordinates.push(coords);
+            } catch (error) {
+              console.error(error);
+            }
+          }
+          return coordinates;
+        }
+        async function getRouteFromOSRM(startCoords, endCoords) {
+          const routeUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${endCoords[1]},${endCoords[0]}?overview=full&geometries=geojson`;
+          const response = await fetch(routeUrl);
+          if (!response.ok) {
+            throw new Error(`Błąd podczas pobierania trasy: ${response.status}`);
+          }
+          const data = await response.json();
+          if (data.routes && data.routes[0] && data.routes[0].geometry) {
+            const distance = data.routes[0].distance;
+            const routeCoordinates = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+            return {
+              routeCoordinates,
+              distance
+            };
+          } else {
+            throw new Error('Brak dostępnych danych o trasie');
+          }
+        }
+        const routeColors = ['blue', 'green', 'red', 'purple', 'black', 'orange', 'yellow'];
+   async function drawRoute(road, coordinates, routeColor) {
+    if (!Array.isArray(coordinates) || coordinates.length < 2) {
+        console.error('Nieprawidłowe dane współrzędnych:', coordinates);
+        return;
     }
-    async function getRouteFromOSRM(startCoords, endCoords) {
-      const routeUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${endCoords[1]},${endCoords[0]}?overview=full&geometries=geojson`;
-      const response = await fetch(routeUrl);
-      if (!response.ok) {
-        throw new Error(`Błąd podczas pobierania trasy: ${response.status}`);
-      }
-      const data = await response.json();
-      if (data.routes && data.routes[0] && data.routes[0].geometry) {
-        const distance = data.routes[0].distance;
-        const routeCoordinates = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
-        return {
-          routeCoordinates,
-          distance
-        };
-      } else {
-        throw new Error('Brak dostępnych danych o trasie');
-      }
-    }
-    const routeColors = ['blue', 'green', 'red', 'purple', 'black', 'orange', 'yellow'];
-async function drawRoute(road, coordinates, routeColor) {
+
     let totalDistance = 0;
     let allCoordinates = [];
 
@@ -621,9 +1197,20 @@ async function drawRoute(road, coordinates, routeColor) {
         const startCoords = coordinates[i];
         const endCoords = coordinates[i + 1];
 
+        if (!Array.isArray(startCoords) || !Array.isArray(endCoords)) {
+            console.error(`Nieprawidłowe współrzędne dla segmentu ${i}:`, startCoords, endCoords);
+            continue;
+        }
+
         try {
             const { routeCoordinates, distance } = await getRouteFromOSRM(startCoords, endCoords);
-            allCoordinates = [...allCoordinates, ...routeCoordinates]; // Dodajemy kolejne segmenty trasy
+
+            if (!Array.isArray(routeCoordinates)) {
+                console.error(`Brak trasy dla segmentu ${i}:`, startCoords, endCoords);
+                continue;
+            }
+
+            allCoordinates = [...allCoordinates, ...routeCoordinates];
             totalDistance += distance;
         } catch (error) {
             console.error(`Błąd pobierania trasy dla segmentu ${i}:`, error);
@@ -647,24 +1234,33 @@ async function drawRoute(road, coordinates, routeColor) {
             <strong>Koszt:</strong> ${((totalDistance / 1000) * 7).toFixed(2)} zł
             <br>
         `);
+
+        if (!window.roadPolylines) {
+            window.roadPolylines = {};
+        }
+        window.roadPolylines[road.id] = polyline;
     } else {
         console.warn("Brak danych do rysowania trasy.");
     }
 }
 
+
+document.addEventListener("DOMContentLoaded", () => {
   fetch('/location/roads')
-  .then(response => response.json())
-  .then(roads => {
-    roads.forEach((road, index) => {
-      if (road.roadStatus === "IN_PROGRESS") {
-        const routeColor = routeColors[index % routeColors.length];
-        geocodeCities([road.from, ...road.via, road.to])
-          .then(coordinates => drawRoute(road, coordinates, routeColor))
-          .catch(error => console.error(`Błąd przy geokodowaniu: ${error}`));
-      }
-    });
-  })
-  .catch(error => console.error(`Błąd przy pobieraniu tras: ${error}`));
+    .then(response => response.json())
+    .then(roads => {
+      roads.forEach((road, index) => {
+        if (road.roadStatus === "IN_PROGRESS") {
+          const routeColor = routeColors[index % routeColors.length];
+          geocodeCities([road.from, ...road.via, road.to])
+            .then(coordinates => drawRoute(road, coordinates, routeColor))
+            .catch(error => console.error(`Błąd przy geokodowaniu: ${error}`));
+        }
+      });
+    })
+    .catch(error => console.error(`Błąd przy pobieraniu tras: ${error}`));
+});
+
 
 </script>
 </body>
