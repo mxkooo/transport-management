@@ -1,15 +1,16 @@
 package com.mxkoo.transport_management.Location.LocationDriver;
 
 import com.mxkoo.transport_management.Driver.DriverRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class LocationDriverServiceImpl implements LocationDriverService{
+
     private final DriverRepository driverRepository;
 
     public List<LocationDriverDTO> getDriverLocations() {

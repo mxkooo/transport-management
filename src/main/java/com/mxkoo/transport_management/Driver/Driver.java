@@ -29,6 +29,7 @@ public class Driver {
 
     @NotBlank
     private String name;
+
     @NotBlank
     private String lastName;
 

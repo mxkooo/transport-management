@@ -4,6 +4,7 @@ import com.mxkoo.transport_management.Road.Road;
 import com.mxkoo.transport_management.Road.RoadRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +12,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class RoadStatusServiceImpl implements RoadStatusService {
 
     private final RoadRepository roadRepository;
+
     @Transactional
     @Scheduled(cron = "0 1 0 * * ?")
     public void checkRoadStatuses() {
@@ -29,9 +31,11 @@ public class RoadStatusServiceImpl implements RoadStatusService {
 
         if (!today.isBefore(road.getDepartureDate()) && !today.isAfter(road.getArrivalDate())) {
             road.setRoadStatus(RoadStatus.IN_PROGRESS);
-        } else if (today.isBefore(road.getDepartureDate())) {
+        }
+        else if (today.isBefore(road.getDepartureDate())) {
             road.setRoadStatus(RoadStatus.IN_FUTURE);
-        } else if (today.isAfter(road.getArrivalDate())) {
+        }
+        else if (today.isAfter(road.getArrivalDate())) {
             road.setRoadStatus(RoadStatus.DONE);
         }
         roadRepository.save(road);

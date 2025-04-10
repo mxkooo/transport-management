@@ -6,20 +6,20 @@ import com.mxkoo.transport_management.Location.LocationRoad.LocationRoadDTO;
 import com.mxkoo.transport_management.Location.LocationRoad.LocationRoadService;
 import com.mxkoo.transport_management.Location.LocationTruck.LocationTruckDTO;
 import com.mxkoo.transport_management.Location.LocationTruck.LocationTruckService;
-import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
-
 @Controller
 @RequestMapping("/location")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class LocationController {
+
     private final LocationDriverService driverService;
     private final LocationTruckService truckService;
     private final LocationRoadService roadService;
